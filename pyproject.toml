@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "aiogram-barber-bot"
+version = "0.1.0"
+description = ""
+authors = ["mgzv <anr.mgzv@gmail.com>"]
+readme = "README.md"
+packages = [{include = "aiogram_barber_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiogram = "^3.3.0"
+workalendar = "^17.0.0"
+sqlalchemy = "^2.0.25"
+asyncpg = "^0.29.0"
+
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+ruff = "^0.1.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

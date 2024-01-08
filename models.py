@@ -1,0 +1,39 @@
+from sqlalchemy import (BigInteger, Boolean, Column, Date, ForeignKey, Integer,
+                        String, Time)
+from sqlalchemy.orm import declarative_base, relationship
+
+Base = declarative_base()
+
+
+class TimeSlot(Base):
+    __tablename__ = "panel_timeslot"
+
+    id = Column(Integer, primary_key=True)
+    time = Column(Time, unique=True)
+
+    def __repr__(self):
+        return self.time.strftime("%H:%M")
+
+
+class Appointment(Base):
+    __tablename__ = "panel_appointment"
+
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
+    time_slot_id = Column(Integer, ForeignKey("panel_timeslot.id"))
+    bar_user_id = Column(Integer, ForeignKey("panel_baruser.id"))
+
+    # Связи с моделями TimeSlot, User
+    time_slot = relationship("TimeSlot")
+    bar_user = relationship("BarUser")
+
+
+class BarUser(Base):
+    __tablename__ = "panel_baruser"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, unique=True)
+    username = Column(String)
+    name = Column(String)
+    phone = Column(String)
+    is_active = Column(Boolean)

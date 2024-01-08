@@ -1,0 +1,12 @@
+*.idea/
+*.pc
+*.pyc
+*.pyo
+__pycache__
+
+*.jmx
+.env
+*venv/
+*.venv/
+*.ruff_cache/
+.pytest_cache/
