@@ -1,3 +1,11 @@
+### Installing
+```
+git clone https://github.com/AinurMingazov/aiogram_barber_bot
+cd aiogram_barber_bot
+```
+Then create .env file (or rename and modify .env.example) in project root and set environment variables for application.
+
+---
 This example of a Telegram bot on aiogram3 was developed for a barber,
 but can be applied in any field where recording is needed.
 
