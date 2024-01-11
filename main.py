@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 from datetime import datetime
 
@@ -22,9 +23,12 @@ from services.database_queries import (create_appointment,
                                        get_user_have_active_appointment,
                                        update_bar_user)
 
-bot = Bot(token=os.getenv("BBOT_TOKEN", ""), parse_mode="HTML")
 # Bot
+bot = Bot(token=os.getenv("BBOT_TOKEN", ""), parse_mode="HTML")
 dp = Dispatcher()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 
 @dp.message(Command("admin"))
