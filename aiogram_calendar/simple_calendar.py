@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from aiogram.types import (CallbackQuery, InlineKeyboardButton,
                            InlineKeyboardMarkup)
 
-from constants import some_redis
+from config import some_redis
 from services.database_queries import get_available_days, get_days_off
 
 from .common import GenericCalendar
