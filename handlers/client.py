@@ -9,9 +9,10 @@ from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import bot, some_redis
+from keyboards.client import get_time_slot_buttons
 from models import Appointment, BarUser
 from services.database_queries import (create_appointment,
-                                       create_or_get_bar_user, find_free_slots,
+                                       create_or_get_bar_user,
                                        get_available_days,
                                        get_bar_user_phone_number, get_days_off,
                                        get_time_slot_id, get_unavailable_days,
@@ -65,77 +66,57 @@ async def command_start_handler(message: Message) -> None:
 
 
 @client_router.callback_query(SimpleCalendarCallback.filter())
-async def get_day_simple_calendar(
-    callback_query: CallbackQuery, callback_data: SimpleCalendarCallback
-):
+async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     unavailable_days = await get_unavailable_days()
     days_off = get_days_off()
     available_days = get_available_days()
+
     calendar = SimpleCalendar(show_alerts=True)
     calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
-    is_selected, selected_date = await calendar.process_selection(
-        callback_query, callback_data
-    )
+    is_selected, selected_date = await calendar.process_selection(callback_query, callback_data)
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        some_redis[callback_query.message.chat.username] = {}
-        some_redis[callback_query.message.chat.username]["on_date"] = selected_date_str
+        some_redis[callback_query.message.chat.username] = {"on_date": selected_date_str}
+
         if selected_date.date() < datetime.now().date():
-            await callback_query.message.answer(
-                f"⛔ Вы выбрали {selected_date_str}\nНельзя выбрать прошедшую дату, повторите выбор",
-                reply_markup=await SimpleCalendar().start_calendar(),
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "Нельзя выбрать прошедшую дату",
             )
         elif selected_date.date() in days_off:
-            await callback_query.message.answer(
-                f"⛔ Вы выбрали {selected_date.strftime('%d %B %Y')}\nК сожалению это выходной, повторите выбор",
-                reply_markup=await SimpleCalendar().start_calendar(),
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "К сожалению, это выходной",
             )
         elif selected_date.date() in unavailable_days:
-            await callback_query.message.answer(
-                f"⛔ Вы выбрали {selected_date.strftime('%d %B %Y')}\nК сожалению на этот день запись уже закрыта, повторите выбор",
-                reply_markup=await SimpleCalendar().start_calendar(),
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "К сожалению, на этот день запись уже закрыта",
             )
         elif selected_date.date() not in available_days:
-            await callback_query.message.answer(
-                f"⛔ Вы выбрали {selected_date.strftime('%d %B %Y')}\nК сожалению запись на далекое будущее не делаем, повторите выбор",
-                reply_markup=await SimpleCalendar().start_calendar(),
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "К сожалению, запись на далекое будущее не делаем",
             )
         else:
-            buttons = []
-            slots = await find_free_slots(selected_date.date())
-            if len(slots) > 4:
-                buttons.append(
-                    [
-                        InlineKeyboardButton(
-                            text=f"{index}", callback_data=f"time_{index}"
-                        )
-                        for index in slots[:4]
-                    ]
-                )
-                buttons.append(
-                    [
-                        InlineKeyboardButton(
-                            text=f"{index}", callback_data=f"time_{index}"
-                        )
-                        for index in slots[4:]
-                    ]
-                )
-            else:
-                buttons.append(
-                    [
-                        InlineKeyboardButton(
-                            text=f"{index}", callback_data=f"time_{index}"
-                        )
-                        for index in slots
-                    ]
-                )
-            keyboard = InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+            keyboard = await get_time_slot_buttons(selected_date)
             await callback_query.message.edit_text(
                 "🕛 Выберите свободное время",
                 reply_markup=keyboard,
                 resize_keyboard=True,
             )
+
+
+async def answer_wrong_date(callback_query: CallbackQuery, selected_date_str: str, answer: str):
+    await callback_query.message.answer(
+        f"⛔ Вы выбрали {selected_date_str}\n{answer}, повторите выбор",
+        reply_markup=await SimpleCalendar().start_calendar(),
+    )
 
 
 @client_router.callback_query(lambda query: query.data.startswith("time_"))
@@ -191,13 +172,7 @@ async def get_confirm(callback_query: CallbackQuery):
         if not user_phone_number:
             markup = ReplyKeyboardMarkup(
                 resize_keyboard=True,
-                keyboard=[
-                    [
-                        KeyboardButton(
-                            text="📱 Отправить номер телефона", request_contact=True
-                        )
-                    ]
-                ],
+                keyboard=[[KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)]],
                 one_time_keyboard=True,
             )
             await callback_query.message.answer(
@@ -206,10 +181,7 @@ async def get_confirm(callback_query: CallbackQuery):
                 reply_markup=markup,
             )
     else:
-        await callback_query.message.edit_text(
-            "Вы отменили запись!",
-        )
-
+        await callback_query.message.edit_text("Вы отменили запись!")
     del some_redis[callback_query.message.chat.username]
 
 

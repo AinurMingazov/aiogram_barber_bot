@@ -54,9 +54,11 @@ class SimpleCalendar(GenericCalendar):
         def highlight_day():
             day_string = format_day_string()
             current_date = date(year, month, day)
+
             date_off = get_days_off()
             unavailable_dates = some_redis["unavailable_days"]
             available_days = get_available_days()
+
             if now_month == month and now_year == year and now_day == day:
                 return highlight(day_string)
             elif current_date in date_off:
