@@ -1,5 +1,5 @@
 from services.database_queries import find_free_slots
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
 
 async def get_time_slot_buttons(selected_date):
@@ -12,3 +12,18 @@ async def get_time_slot_buttons(selected_date):
         buttons.append(chunk)
         keyboard_buttons = keyboard_buttons[4:]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
+async def get_confirm_choice_buttons():
+    buttons = [
+        [
+            InlineKeyboardButton(text=f"{index}", callback_data=f"conf_{index}")
+            for index in ["✅ Подтвердить", "❌ Отменить"]
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
+async def ask_user_phone():
+    return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True,
+                               keyboard=[[KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)]],)

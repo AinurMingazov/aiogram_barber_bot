@@ -2,14 +2,12 @@ from datetime import datetime
 
 from aiogram import F, Router
 from aiogram.filters import Command
-from aiogram.types import (CallbackQuery, InlineKeyboardButton,
-                           InlineKeyboardMarkup, KeyboardButton, Message,
-                           ReplyKeyboardMarkup, ReplyKeyboardRemove)
+from aiogram.types import CallbackQuery,  Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import bot, some_redis
-from keyboards.client import get_time_slot_buttons
+from keyboards.client import get_time_slot_buttons, get_confirm_choice_buttons, ask_user_phone
 from models import Appointment, BarUser
 from services.database_queries import (create_appointment,
                                        create_or_get_bar_user,
@@ -123,13 +121,7 @@ async def answer_wrong_date(callback_query: CallbackQuery, selected_date_str: st
 async def get_time(callback_query: CallbackQuery):
     selected_time_str = callback_query.data.split("_")[1]
     some_redis[callback_query.message.chat.username]["on_time"] = selected_time_str
-    buttons = [
-        [
-            InlineKeyboardButton(text=f"{index}", callback_data=f"conf_{index}")
-            for index in ["✅ Подтвердить", "❌ Отменить"]
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+    keyboard = await get_confirm_choice_buttons()
     await callback_query.message.edit_text(
         f"👍 Отлично, подтвердите запись на\n 🗓 Дата:"
         f" {some_redis[callback_query.message.chat.username]['on_date']}\n ⌚ Время: {some_redis[callback_query.message.chat.username]['on_time']}",
@@ -170,11 +162,7 @@ async def get_confirm(callback_query: CallbackQuery):
         )
         user_phone_number = await get_bar_user_phone_number(bar_user_id)
         if not user_phone_number:
-            markup = ReplyKeyboardMarkup(
-                resize_keyboard=True,
-                keyboard=[[KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)]],
-                one_time_keyboard=True,
-            )
+            markup = await ask_user_phone()
             await callback_query.message.answer(
                 "Отправьте номер телефона для возможности с Вами связаться",
                 resize_keyboard=True,
