@@ -2,18 +2,16 @@ from datetime import datetime
 
 from aiogram import F, Router
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery,  Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import bot, some_redis
 from keyboards.client import get_time_slot_buttons, get_confirm_choice_buttons, ask_user_phone
-from models import Appointment, BarUser
-from services.database_queries import (create_appointment,
-                                       create_or_get_bar_user,
-                                       get_available_days,
+from services.appointments import add_appointment
+from services.database_queries import (get_available_days,
                                        get_bar_user_phone_number, get_days_off,
-                                       get_time_slot_id, get_unavailable_days,
+                                       get_unavailable_days,
                                        get_user_have_active_appointment,
                                        update_bar_user)
 
@@ -134,25 +132,7 @@ async def get_time(callback_query: CallbackQuery):
 async def get_confirm(callback_query: CallbackQuery):
     confirm = callback_query.data.split("_")[1]
     if confirm.lower() == "✅ подтвердить":
-        new_user = BarUser(
-            user_id=callback_query.message.chat.id,
-            username=callback_query.message.chat.username,
-            name=callback_query.message.chat.first_name,
-            phone="",
-            is_active=True,
-        )
-        time_slot_id = await get_time_slot_id(
-            some_redis[callback_query.message.chat.username]["on_time"]
-        )
-        bar_user_id = await create_or_get_bar_user(new_user)
-        new_appointment = Appointment(
-            date=datetime.strptime(
-                some_redis[callback_query.message.chat.username]["on_date"], "%d %B %Y"
-            ).date(),
-            time_slot_id=time_slot_id,
-            bar_user_id=bar_user_id,
-        )
-        await create_appointment(new_appointment)
+        bar_user_id = await add_appointment(callback_query.message)
 
         await callback_query.message.edit_text(
             f"🎉 Отлично, Вы записаны на\nДату: {some_redis[callback_query.message.chat.username]['on_date']}\n"
