@@ -33,7 +33,14 @@ class BarUser(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger, unique=True)
-    username = Column(String)
-    name = Column(String)
-    phone = Column(String)
+    username = Column(String, nullable=True)
+    name = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
     is_active = Column(Boolean)
+
+
+class DayOff(Base):
+    __tablename__ = "panel_dayoff"
+
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
