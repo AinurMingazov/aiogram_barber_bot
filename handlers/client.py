@@ -73,7 +73,7 @@ async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: 
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        some_redis[callback_query.message.chat.username] = {"on_date": selected_date_str}
+        some_redis[callback_query.message.chat.id] = {"on_date": selected_date_str}
 
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(
@@ -118,11 +118,11 @@ async def answer_wrong_date(callback_query: CallbackQuery, selected_date_str: st
 @client_router.callback_query(lambda query: query.data.startswith("time_"))
 async def get_time(callback_query: CallbackQuery):
     selected_time_str = callback_query.data.split("_")[1]
-    some_redis[callback_query.message.chat.username]["on_time"] = selected_time_str
+    some_redis[callback_query.message.chat.id]["on_time"] = selected_time_str
     keyboard = await get_confirm_choice_buttons()
     await callback_query.message.edit_text(
         f"👍 Отлично, подтвердите запись на\n 🗓 Дата:"
-        f" {some_redis[callback_query.message.chat.username]['on_date']}\n ⌚ Время: {some_redis[callback_query.message.chat.username]['on_time']}",
+        f" {some_redis[callback_query.message.chat.id]['on_date']}\n ⌚ Время: {some_redis[callback_query.message.chat.id]['on_time']}",
         reply_markup=keyboard,
         resize_keyboard=True,
     )
@@ -135,8 +135,8 @@ async def get_confirm(callback_query: CallbackQuery):
         bar_user_id = await add_appointment(callback_query.message)
 
         await callback_query.message.edit_text(
-            f"🎉 Отлично, Вы записаны на\nДату: {some_redis[callback_query.message.chat.username]['on_date']}\n"
-            f"Время: {some_redis[callback_query.message.chat.username]['on_time']}!\n"
+            f"🎉 Отлично, Вы записаны на\nДату: {some_redis[callback_query.message.chat.id]['on_date']}\n"
+            f"Время: {some_redis[callback_query.message.chat.id]['on_time']}!\n"
             f"В день стрижки 🤖 - Бот отправит напоминание\n\n",
             resize_keyboard=True,
         )
@@ -150,7 +150,7 @@ async def get_confirm(callback_query: CallbackQuery):
             )
     else:
         await callback_query.message.edit_text("Вы отменили запись!")
-    del some_redis[callback_query.message.chat.username]
+    del some_redis[callback_query.message.chat.id]
 
 
 @client_router.message(F.contact)
