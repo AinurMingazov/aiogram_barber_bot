@@ -13,7 +13,7 @@ from services.database_queries import (get_available_days,
                                        get_bar_user_phone_number, get_days_off,
                                        get_unavailable_days,
                                        get_user_have_active_appointment,
-                                       update_bar_user)
+                                       update_bar_user, get_admin_date_off)
 
 client_router = Router()
 
@@ -38,6 +38,10 @@ async def command_start_handler(message: Message) -> None:
     """
     unavailable_days = await get_unavailable_days()
     some_redis["unavailable_days"] = unavailable_days
+
+    admin_date_off = await get_admin_date_off()
+    some_redis["admin_date_off"] = admin_date_off
+
     user_have_active_appointment = await get_user_have_active_appointment(
         message.from_user.id
     )

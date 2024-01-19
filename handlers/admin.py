@@ -22,7 +22,7 @@ async def command_admin(message: Message) -> None:
 
 
 @admin_router.callback_query(AdminCallback.filter(F.action == "all_appointments"))
-async def get_confirm(callback_query: CallbackQuery, callback_data: AdminCallback):
+async def get_all_appointments(callback_query: CallbackQuery, callback_data: AdminCallback):
     active_appointments_by_dates = await get_active_appointments()
     for day, day_slots in active_appointments_by_dates.items():
         slots = []
