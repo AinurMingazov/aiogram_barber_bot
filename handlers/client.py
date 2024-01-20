@@ -65,7 +65,7 @@ async def command_start_handler(message: Message) -> None:
         )
 
 
-@client_router.callback_query(SimpleCalendarCallback.filter())
+@client_router.callback_query(SimpleCalendarCallback.filter(F.flag == 'user'))
 async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     unavailable_days = await get_unavailable_days()
     days_off = get_days_off()

@@ -7,6 +7,7 @@ from aiogram.types import (CallbackQuery, InlineKeyboardButton,
 
 from config import some_redis
 from services.database_queries import get_available_days, get_days_off
+from services.redis_data import update_redis_cache
 
 from .common import GenericCalendar
 from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight,
@@ -20,18 +21,28 @@ class SimpleCalendar(GenericCalendar):
     ).pack()  # placeholder for no answer buttons
 
     async def start_calendar(
-        self, year: int = datetime.now().year, month: int = datetime.now().month
+        self, year: int = datetime.now().year, month: int = datetime.now().month, flag: str = 'user'
     ) -> InlineKeyboardMarkup:
         """
         Creates an inline keyboard with the provided year and month
+        :param flag: Flags with which params show calendar
         :param int year: Year to use in the calendar, if None the current year is used.
         :param int month: Month to use in the calendar, if None the current month is used.
         :return: Returns InlineKeyboardMarkup object with the calendar.
         """
-
+        await update_redis_cache()
         today = datetime.now()
         now_weekday = self._labels.days_of_week[today.weekday()]
         now_month, now_year, now_day = today.month, today.year, today.day
+
+        date_off = some_redis["date_off"]
+        admin_date_off = some_redis["admin_date_off"]
+        date_off = list(itertools.chain(date_off, admin_date_off))
+
+        unavailable_dates, available_days = [], []
+        if flag == 'user':
+            unavailable_dates = some_redis["unavailable_days"]
+            available_days = some_redis["available_days"]
 
         def highlight_month():
             month_str = self._labels.months[month - 1]
@@ -55,13 +66,6 @@ class SimpleCalendar(GenericCalendar):
         def highlight_day():
             day_string = format_day_string()
             current_date = date(year, month, day)
-
-            unavailable_dates = some_redis["unavailable_days"]
-            available_days = get_available_days()
-
-            date_off = get_days_off()
-            admin_date_off = some_redis["admin_date_off"]
-            date_off = list(itertools.chain(date_off, admin_date_off))
 
             if now_month == month and now_year == year and now_day == day:
                 return highlight(day_string)
@@ -155,7 +159,7 @@ class SimpleCalendar(GenericCalendar):
                     InlineKeyboardButton(
                         text=highlight_day(),
                         callback_data=SimpleCalendarCallback(
-                            act=SimpleCalAct.day, year=year, month=month, day=day
+                            act=SimpleCalAct.day, year=year, month=month, day=day, flag=flag
                         ).pack(),
                     )
                 )
@@ -167,7 +171,7 @@ class SimpleCalendar(GenericCalendar):
             InlineKeyboardButton(
                 text=self._labels.cancel_caption,
                 callback_data=SimpleCalendarCallback(
-                    act=SimpleCalAct.cancel, year=year, month=month, day=day
+                    act=SimpleCalAct.cancel, year=year, month=month, day=day, flag=flag
                 ).pack(),
             )
         )
@@ -178,7 +182,7 @@ class SimpleCalendar(GenericCalendar):
             InlineKeyboardButton(
                 text=self._labels.today_caption,
                 callback_data=SimpleCalendarCallback(
-                    act=SimpleCalAct.today, year=year, month=month, day=day
+                    act=SimpleCalAct.today, year=year, month=month, day=day, flag=flag
                 ).pack(),
             )
         )

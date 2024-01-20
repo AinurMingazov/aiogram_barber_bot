@@ -1,5 +1,7 @@
+import enum
+
 from sqlalchemy import (BigInteger, Boolean, Column, Date, ForeignKey, Integer,
-                        String, Time)
+                        String, Time, Enum)
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -39,8 +41,16 @@ class BarUser(Base):
     is_active = Column(Boolean)
 
 
-class DayOff(Base):
-    __tablename__ = "panel_dayoff"
+class DayType(enum.Enum):
+    FULL_WORKDAY = "FULL_WORKDAY"
+    HALF_WORKDAY = "HALF_WORKDAY"
+    DAY_OFF = "DAY_OFF"
+
+
+class CustomDay(Base):
+    __tablename__ = "panel_customday"
 
     id = Column(Integer, primary_key=True)
     date = Column(Date)
+    day_type = Column(Enum("FULL_WORKDAY", "HALF_WORKDAY", "DAY_OFF", name="DayType"), default="DAY_OFF")
+

@@ -206,7 +206,11 @@ async def get_admin_date_off():
     today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
-        query_day_off = f"""SELECT date FROM panel_dayoff WHERE date >= '{today}'"""
+        query_day_off = f"""SELECT date 
+                              FROM panel_customday 
+                             WHERE date >= '{today}'
+                               AND day_type = 'DAY_OFF'
+        """
         day_off_db = await conn.execute(text(query_day_off))
     days_off = [day.date for day in day_off_db.all()]
     return days_off
