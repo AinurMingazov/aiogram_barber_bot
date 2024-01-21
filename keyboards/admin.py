@@ -9,6 +9,7 @@ from services.database_queries import find_free_slots
 async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
     add_appointment = {"add_appointment": "Добавить запись", "add_day_off": "Добавить выходной"}
     show_appointment = {"all_appointments": "Посмотреть все записи", "date_appointments": "Посмотреть записи по дате"}
+
     buttons = [
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
@@ -33,4 +34,15 @@ async def get_admin_time_slot_buttons(selected_date: datetime) -> InlineKeyboard
         chunk = keyboard_buttons[:4]
         buttons.append(chunk)
         keyboard_buttons = keyboard_buttons[4:]
+    return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
+async def get_admin_confirm_choice_buttons() -> InlineKeyboardMarkup:
+    confirm = {"1": "✅ Подтвердить", "0": "❌ Отменить"}
+    buttons = [
+        [
+            InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"conf_{key}").pack())
+            for key, answer in confirm.items()
+        ]
+    ]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)

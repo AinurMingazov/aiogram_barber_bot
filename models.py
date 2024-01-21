@@ -34,7 +34,7 @@ class BarUser(Base):
     __tablename__ = "panel_baruser"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(BigInteger, unique=True)
+    user_id = Column(BigInteger, nullable=True)
     username = Column(String, nullable=True)
     name = Column(String, nullable=True)
     phone = Column(String, nullable=True)

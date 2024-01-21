@@ -111,6 +111,14 @@ async def create_or_get_bar_user(new_user):
         return new_user.id
 
 
+async def create_bar_user(new_user):
+    conn = async_session()
+    async with conn.begin():
+        conn.add(new_user)
+        await conn.commit()
+        return new_user.id
+
+
 async def get_bar_user_phone_number(bar_user_id):
     conn = async_session()
     async with conn.begin():
