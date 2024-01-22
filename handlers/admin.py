@@ -33,6 +33,45 @@ async def command_admin(message: Message) -> None:
     )
 
 
+@admin_router.callback_query(AdminCallback.filter(F.action == "day_appointments"))
+async def get_day_appointments(callback_query: CallbackQuery, callback_data: AdminCallback):
+    await callback_query.message.edit_text(
+        f"🗓 Выберите желаемую дату для просмотра записей! \n"
+        f"[1] - сегодня\n"
+        f"(2) - даты на которые есть запись\n",
+        reply_markup=await SimpleCalendar().start_calendar(flag='day_admin'),
+    )
+
+
+@admin_router.callback_query(SimpleCalendarCallback.filter(F.flag == 'day_admin'))
+async def get_appointment_day(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
+    calendar = SimpleCalendar(show_alerts=True)
+    calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
+    is_selected, selected_date = await calendar.process_selection(callback_query, callback_data)
+
+    if is_selected:
+        selected_date_str = selected_date.strftime("%d %B %Y")
+        some_redis[callback_query.message.chat.id] = {"on_date": selected_date_str}
+
+        if selected_date.date() < datetime.now().date():
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "Нельзя выбрать прошедшую дату",
+            )
+        else:
+            # keyboard = await get_admin_time_slot_buttons(selected_date)
+            await callback_query.message.edit_text(
+                f"Записи за {selected_date_str}",
+                # reply_markup=keyboard,
+                resize_keyboard=True,
+            )
+
+
+
+
+
+
 @admin_router.callback_query(AdminCallback.filter(F.action == "all_appointments"))
 async def get_all_appointments(callback_query: CallbackQuery, callback_data: AdminCallback):
     active_appointments_by_dates = await get_active_appointments()

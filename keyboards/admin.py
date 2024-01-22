@@ -8,7 +8,7 @@ from services.database_queries import find_free_slots
 
 async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
     add_appointment = {"add_appointment": "Добавить запись", "add_day_off": "Добавить выходной"}
-    show_appointment = {"all_appointments": "Посмотреть все записи", "date_appointments": "Посмотреть записи по дате"}
+    show_appointment = {"all_appointments": "Посмотреть все записи", "day_appointments": "Посмотреть записи по дате"}
 
     buttons = [
         [
