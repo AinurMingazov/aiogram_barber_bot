@@ -177,14 +177,18 @@ async def create_appointment(new_appointment):
         return new_appointment.id
 
 
-async def get_active_appointments():
+async def get_active_appointments(day=None):
+    for_day = ''
+    if day:
+        for_day = f"AND pa.date = '{day}'"
     today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
         query_appointments = f"""SELECT pa.date, pb.name, pb.phone, pt.time FROM panel_appointment pa
                                    JOIN panel_baruser pb ON  pa.bar_user_id = pb.id
                                    JOIN panel_timeslot pt ON pa.time_slot_id = pt.id
-                                  WHERE pa.date >= '{today}'                                  
+                                  WHERE pa.date >= '{today}'
+                                  {for_day}                                  
                                ORDER BY pa.date, pt.time
         """
         appointments_db = await conn.execute(text(query_appointments))
@@ -222,3 +226,11 @@ async def get_admin_date_off():
         day_off_db = await conn.execute(text(query_day_off))
     days_off = [day.date for day in day_off_db.all()]
     return days_off
+
+
+async def create_custom_day(new_custom_day):
+    conn = async_session()
+    async with conn.begin():
+        conn.add(new_custom_day)
+        await conn.commit()
+        return new_custom_day.date

@@ -2,17 +2,32 @@ import asyncio
 import logging
 
 from aiogram import Dispatcher
+from aiogram.filters import Command
+from aiogram.types import Message
 
 from config import bot
-from handlers.admin import admin_router
+from handlers.admin.edit_appointments import admin_edit
+from handlers.admin.get_appointments import admin_get
 from handlers.client import client_router
+from keyboards.admin import get_admin_choice_buttons
 
 # Bot
 dp = Dispatcher()
-dp.include_routers(admin_router, client_router)
+dp.include_routers(admin_get, admin_edit, client_router)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+
+@dp.message(Command("admin"))
+async def command_admin(message: Message) -> None:
+
+    keyboard = await get_admin_choice_buttons()
+    await message.answer(
+        f"🕹 Панель администратора\n",
+        reply_markup=keyboard,
+        resize_keyboard=True,
+    )
 
 
 async def main():
