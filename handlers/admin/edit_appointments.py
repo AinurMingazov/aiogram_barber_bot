@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import some_redis
+from constants import denotation_admin_days
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from keyboards.admin import get_admin_time_slot_buttons, get_admin_confirm_choice_buttons
@@ -25,11 +26,7 @@ class ClientForm(StatesGroup):
 @admin_edit.callback_query(AdminCallback.filter(F.action == "add_appointment"))
 async def add_appointment(callback_query: CallbackQuery, callback_data: AdminCallback):
     await callback_query.message.edit_text(
-        f"🗓 Выберите желаемую дату для записи! \n"
-        f"[1] - сегодня\n"
-        f"∙2∙ - доступные даты\n"
-        f"∶3∶ - запись завершена\n"
-        f"⁝4⁝ - выходные\n",
+        f"🗓 Выберите желаемую дату для записи! {denotation_admin_days}",
         reply_markup=await SimpleCalendar().start_calendar(flag='admin'),
     )
 
@@ -99,11 +96,7 @@ async def get_confirm(callback_query: CallbackQuery):
 @admin_edit.callback_query(AdminCallback.filter(F.action == "add_day_off"))
 async def add_day_off(callback_query: CallbackQuery, callback_data: AdminCallback):
     await callback_query.message.edit_text(
-        f"🗓 Выберите дату которую хотите сделать выходным! \n"
-        f"[1] - сегодня\n"
-        f"(2) - имеются записи\n"
-        f"∶3∶ - не полный рабочий день\n"
-        f"⁝4⁝ - выходные\n",
+        f"🗓 Выберите дату которую хотите сделать выходным!{denotation_admin_days}",
         reply_markup=await SimpleCalendar().start_calendar(flag='admin_off'),
     )
 

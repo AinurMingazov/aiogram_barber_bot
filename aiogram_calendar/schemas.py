@@ -107,12 +107,3 @@ def superscript(text):
     for i in text:
         output += super_s[normal.index(i)] if i in normal else i
     return output
-
-
-def subscript(text):
-    normal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-=()"
-    sub_s = "ₐ₈CDₑբGₕᵢⱼₖₗₘₙₒₚQᵣₛₜᵤᵥwₓᵧZₐ♭꜀ᑯₑբ₉ₕᵢⱼₖₗₘₙₒₚ૧ᵣₛₜᵤᵥwₓᵧ₂₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎"
-    output = ""
-    for i in text:
-        output += sub_s[normal.index(i)] if i in normal else i
-    return output

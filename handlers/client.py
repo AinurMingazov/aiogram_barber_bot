@@ -7,6 +7,7 @@ from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import bot, some_redis
+from constants import denotation_client_days
 from keyboards.client import get_time_slot_buttons, get_confirm_choice_buttons, ask_user_phone
 from services.appointments import add_appointment
 from services.database_queries import (get_available_days,
@@ -20,15 +21,7 @@ client_router = Router()
 
 @client_router.message(Command("help"))
 async def command_help(message: Message) -> None:
-    await message.answer(
-        f"👋 Добрый день, {hbold(message.from_user.full_name)}! \n"
-        f"🗓 При выборе даты есть такие подсказки! \n"
-        f"[1] - сегодня\n"
-        f"∙2∙ - доступные даты\n"
-        f"∶3∶ - запись завершена\n"
-        f"⁝4⁝ - выходные\n"
-        f" 5 - обычные даты на которые запись не ведется",
-    )
+    await message.answer(f"👋 Добрый день, {hbold(message.from_user.full_name)}!{denotation_client_days}")
 
 
 @client_router.message(Command("start"))
@@ -55,12 +48,7 @@ async def command_start_handler(message: Message) -> None:
     else:
         await message.answer(
             f"👋 Добрый день, {hbold(message.from_user.full_name)}! \n"
-            f"🗓 Выберите желаемую дату для записи! \n"
-            f"[1] - сегодня\n"
-            f"∙2∙ - доступные даты\n"
-            f"∶3∶ - запись завершена\n"
-            f"⁝4⁝ - выходные\n"
-            f" 5 - обычные даты на которые запись не ведется",
+            f"🗓 Выберите желаемую дату для записи!{denotation_client_days}",
             reply_markup=await SimpleCalendar().start_calendar(),
         )
 
