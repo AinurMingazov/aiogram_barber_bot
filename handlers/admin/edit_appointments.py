@@ -8,7 +8,7 @@ from config import some_redis
 from constants import denotation_admin_days
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
-from keyboards.admin import get_admin_time_slot_buttons, get_admin_confirm_choice_buttons
+from keyboards.admin import get_admin_time_slot_buttons, get_admin_confirm_choice_buttons, change_date_option
 from models import CustomDay
 from services.appointments import add_admin_appointment
 from aiogram.fsm.state import State, StatesGroup
@@ -93,7 +93,7 @@ async def get_confirm(callback_query: CallbackQuery):
     del some_redis[callback_query.message.chat.id]
 
 
-@admin_edit.callback_query(AdminCallback.filter(F.action == "add_day_off"))
+@admin_edit.callback_query(AdminCallback.filter(F.action == "change_day"))
 async def add_day_off(callback_query: CallbackQuery, callback_data: AdminCallback):
     await callback_query.message.edit_text(
         f"🗓 Выберите дату которую хотите сделать выходным!{denotation_admin_days}",
@@ -102,7 +102,7 @@ async def add_day_off(callback_query: CallbackQuery, callback_data: AdminCallbac
 
 
 @admin_edit.callback_query(SimpleCalendarCallback.filter(F.flag == 'admin_off'))
-async def add_new_day_off(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
+async def change_day_option(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     calendar = SimpleCalendar(show_alerts=True)
     calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
     is_selected, selected_date = await calendar.process_selection(callback_query, callback_data)
@@ -117,12 +117,48 @@ async def add_new_day_off(callback_query: CallbackQuery, callback_data: SimpleCa
                 "Нельзя выбрать прошедшую дату",
             )
         else:
-            custom_day = CustomDay(
-                date=selected_date.date(),
-                day_type='DAY_OFF'
-            )
-            await create_custom_day(custom_day)
+            # add check day option
+            keyboard = await change_date_option()
             await callback_query.message.edit_text(
-                f"🕛 {selected_date_str} - сделан выходным днем",
-                resize_keyboard=True,
-            )
+                f"👍 Выбрана {selected_date_str} сделать день",
+                reply_markup=keyboard,
+                resize_keyboard=True)
+
+
+@admin_edit.callback_query(AdminCallback.filter(F.action.startswith("make_")))
+async def get_day_option(callback_query: CallbackQuery):
+    option = callback_query.data.split("_")[1]
+
+    selected_date = datetime.now()  # change to selected date
+    selected_date_str = selected_date.strftime("%d %B %Y")
+
+    if option == "fullwork":
+        custom_day = CustomDay(
+            date=selected_date.date(),
+            day_type='DAY_OFF'
+        )
+        await create_custom_day(custom_day)
+        await callback_query.message.edit_text(
+            f"🕛 {selected_date_str} - сделан рабочим днем",
+            resize_keyboard=True,
+        )
+    elif option == "halfwork":
+        custom_day = CustomDay(
+            date=selected_date.date(),
+            day_type='HALF_WORKDAY'
+        )
+        await create_custom_day(custom_day)
+        await callback_query.message.edit_text(
+            f"🕛 {selected_date_str} - сделан не полным рабочим днем",
+            resize_keyboard=True,
+        )
+    elif option == "dayoff":
+        custom_day = CustomDay(
+            date=selected_date.date(),
+            day_type='DAY_OFF'
+        )
+        await create_custom_day(custom_day)
+        await callback_query.message.edit_text(
+            f"🕛 {selected_date_str} - сделан выходным днем",
+            resize_keyboard=True,
+        )
