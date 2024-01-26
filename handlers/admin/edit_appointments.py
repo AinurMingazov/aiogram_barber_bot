@@ -109,7 +109,8 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-
+        some_redis[callback_query.message.chat.id] = {}
+        some_redis[callback_query.message.chat.id]["change_day"] = selected_date
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(
                 callback_query,
@@ -129,7 +130,7 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
 async def get_day_option(callback_query: CallbackQuery):
     option = callback_query.data.split("_")[1]
 
-    selected_date = datetime.now()  # change to selected date
+    selected_date = some_redis[callback_query.message.chat.id]["change_day"]
     selected_date_str = selected_date.strftime("%d %B %Y")
 
     if option == "fullwork":
@@ -162,3 +163,4 @@ async def get_day_option(callback_query: CallbackQuery):
             f"🕛 {selected_date_str} - сделан выходным днем",
             resize_keyboard=True,
         )
+    del some_redis[callback_query.message.chat.id]
