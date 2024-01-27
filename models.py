@@ -1,7 +1,4 @@
-import enum
-
-from sqlalchemy import (BigInteger, Boolean, Column, Date, ForeignKey, Integer,
-                        String, Time, Enum)
+from sqlalchemy import BigInteger, Boolean, Column, Date, ForeignKey, Integer, String, Time
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()

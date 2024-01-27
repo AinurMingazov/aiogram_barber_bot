@@ -75,57 +75,39 @@ testset = [
         (False, None),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "DAY", "year": "2022", "month": "8", "day": "1"}
-        ),
+        SimpleCalendarCallback(**{"act": "DAY", "year": "2022", "month": "8", "day": "1"}),
         (True, datetime(2022, 8, 1)),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "DAY", "year": "2021", "month": "7", "day": "16"}
-        ),
+        SimpleCalendarCallback(**{"act": "DAY", "year": "2021", "month": "7", "day": "16"}),
         (True, datetime(2021, 7, 16)),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "DAY", "year": "1900", "month": "10", "day": "8"}
-        ),
+        SimpleCalendarCallback(**{"act": "DAY", "year": "1900", "month": "10", "day": "8"}),
         (True, datetime(1900, 10, 8)),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "PREV-YEAR", "year": "2022", "month": "8", "day": "1"}
-        ),
+        SimpleCalendarCallback(**{"act": "PREV-YEAR", "year": "2022", "month": "8", "day": "1"}),
         (False, None),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "PREV-MONTH", "year": "2021", "month": "8", "day": "0"}
-        ),
+        SimpleCalendarCallback(**{"act": "PREV-MONTH", "year": "2021", "month": "8", "day": "0"}),
         (False, None),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "NEXT-YEAR", "year": "2022", "month": "8", "day": "1"}
-        ),
+        SimpleCalendarCallback(**{"act": "NEXT-YEAR", "year": "2022", "month": "8", "day": "1"}),
         (False, None),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "NEXT-MONTH", "year": "2021", "month": "8", "day": "0"}
-        ),
+        SimpleCalendarCallback(**{"act": "NEXT-MONTH", "year": "2021", "month": "8", "day": "0"}),
         (False, None),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "CANCEL", "year": "2021", "month": "8", "day": "0"}
-        ),
+        SimpleCalendarCallback(**{"act": "CANCEL", "year": "2021", "month": "8", "day": "0"}),
         (False, None),
     ),
     (
-        SimpleCalendarCallback(
-            **{"act": "TODAY", "year": "2021", "month": "8", "day": "1"}
-        ),
+        SimpleCalendarCallback(**{"act": "TODAY", "year": "2021", "month": "8", "day": "1"}),
         (False, None),
     ),
 ]

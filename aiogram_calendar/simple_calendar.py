@@ -2,26 +2,21 @@ import calendar
 import itertools
 from datetime import date, datetime, timedelta
 
-from aiogram.types import (CallbackQuery, InlineKeyboardButton,
-                           InlineKeyboardMarkup)
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import some_redis
-from services.database_queries import get_available_days, get_days_off
 from services.redis_data import update_redis_cache
 
 from .common import GenericCalendar
-from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight,
-                      highlight_available_dates, highlight_days_off,
+from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates, highlight_days_off,
                       highlight_unavailable_dates, superscript)
 
 
 class SimpleCalendar(GenericCalendar):
-    ignore_callback = SimpleCalendarCallback(
-        act=SimpleCalAct.ignore
-    ).pack()  # placeholder for no answer buttons
+    ignore_callback = SimpleCalendarCallback(act=SimpleCalAct.ignore).pack()  # placeholder for no answer buttons
 
     async def start_calendar(
-        self, year: int = datetime.now().year, month: int = datetime.now().month, flag: str = 'user'
+        self, year: int = datetime.now().year, month: int = datetime.now().month, flag: str = "user"
     ) -> InlineKeyboardMarkup:
         """
         Creates an inline keyboard with the provided year and month
@@ -40,7 +35,7 @@ class SimpleCalendar(GenericCalendar):
         date_off = list(itertools.chain(date_off, admin_date_off))
 
         unavailable_dates, available_days = [], []
-        if flag == 'user':
+        if flag == "user":
             unavailable_dates = some_redis["unavailable_days"]
             available_days = some_redis["available_days"]
 
@@ -86,9 +81,7 @@ class SimpleCalendar(GenericCalendar):
         years_row.append(
             InlineKeyboardButton(
                 text="<<",
-                callback_data=SimpleCalendarCallback(
-                    act=SimpleCalAct.prev_y, year=year, month=month, day=1
-                ).pack(),
+                callback_data=SimpleCalendarCallback(act=SimpleCalAct.prev_y, year=year, month=month, day=1).pack(),
             )
         )
         years_row.append(
@@ -100,9 +93,7 @@ class SimpleCalendar(GenericCalendar):
         years_row.append(
             InlineKeyboardButton(
                 text=">>",
-                callback_data=SimpleCalendarCallback(
-                    act=SimpleCalAct.next_y, year=year, month=month, day=1
-                ).pack(),
+                callback_data=SimpleCalendarCallback(act=SimpleCalAct.next_y, year=year, month=month, day=1).pack(),
             )
         )
         kb.append(years_row)
@@ -112,22 +103,14 @@ class SimpleCalendar(GenericCalendar):
         month_row.append(
             InlineKeyboardButton(
                 text="<",
-                callback_data=SimpleCalendarCallback(
-                    act=SimpleCalAct.prev_m, year=year, month=month, day=1
-                ).pack(),
+                callback_data=SimpleCalendarCallback(act=SimpleCalAct.prev_m, year=year, month=month, day=1).pack(),
             )
         )
-        month_row.append(
-            InlineKeyboardButton(
-                text=highlight_month(), callback_data=self.ignore_callback
-            )
-        )
+        month_row.append(InlineKeyboardButton(text=highlight_month(), callback_data=self.ignore_callback))
         month_row.append(
             InlineKeyboardButton(
                 text=">",
-                callback_data=SimpleCalendarCallback(
-                    act=SimpleCalAct.next_m, year=year, month=month, day=1
-                ).pack(),
+                callback_data=SimpleCalendarCallback(act=SimpleCalAct.next_m, year=year, month=month, day=1).pack(),
             )
         )
         kb.append(month_row)
@@ -136,9 +119,7 @@ class SimpleCalendar(GenericCalendar):
         week_days_labels_row = []
         for weekday in self._labels.days_of_week:
             week_days_labels_row.append(
-                InlineKeyboardButton(
-                    text=highlight_weekday(), callback_data=self.ignore_callback
-                )
+                InlineKeyboardButton(text=highlight_weekday(), callback_data=self.ignore_callback)
             )
         kb.append(week_days_labels_row)
 
@@ -149,11 +130,7 @@ class SimpleCalendar(GenericCalendar):
             days_row = []
             for day in week:
                 if day == 0:
-                    days_row.append(
-                        InlineKeyboardButton(
-                            text=" ", callback_data=self.ignore_callback
-                        )
-                    )
+                    days_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
                     continue
                 days_row.append(
                     InlineKeyboardButton(
@@ -175,9 +152,7 @@ class SimpleCalendar(GenericCalendar):
                 ).pack(),
             )
         )
-        cancel_row.append(
-            InlineKeyboardButton(text=" ", callback_data=self.ignore_callback)
-        )
+        cancel_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
         cancel_row.append(
             InlineKeyboardButton(
                 text=self._labels.today_caption,
@@ -191,14 +166,10 @@ class SimpleCalendar(GenericCalendar):
 
     async def _update_calendar(self, query: CallbackQuery, with_date: datetime):
         await query.message.edit_reply_markup(
-            reply_markup=await self.start_calendar(
-                int(with_date.year), int(with_date.month)
-            )
+            reply_markup=await self.start_calendar(int(with_date.year), int(with_date.month))
         )
 
-    async def process_selection(
-        self, query: CallbackQuery, data: SimpleCalendarCallback
-    ) -> tuple:
+    async def process_selection(self, query: CallbackQuery, data: SimpleCalendarCallback) -> tuple:
         """
         Process the callback_query. This method generates a new calendar if forward or
         backward is pressed. This method should be called inside a CallbackQueryHandler.

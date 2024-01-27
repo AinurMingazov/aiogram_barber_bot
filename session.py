@@ -14,9 +14,7 @@ ASYNC_DATABASE_URL = url.URL.create(
     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
 )
 
-engine = create_async_engine(
-    ASYNC_DATABASE_URL, future=True, execution_options={"isolation_level": "AUTOCOMMIT"}
-)
+engine = create_async_engine(ASYNC_DATABASE_URL, future=True, execution_options={"isolation_level": "AUTOCOMMIT"})
 
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 

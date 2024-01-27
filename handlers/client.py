@@ -8,13 +8,10 @@ from aiogram.utils.markdown import hbold
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import bot, some_redis
 from constants import denotation_client_days
-from keyboards.client import get_time_slot_buttons, get_confirm_choice_buttons, ask_user_phone
+from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
 from services.appointments import add_appointment
-from services.database_queries import (get_available_days,
-                                       get_bar_user_phone_number, get_days_off,
-                                       get_unavailable_days,
-                                       get_user_have_active_appointment,
-                                       update_bar_user, get_admin_date_off)
+from services.database_queries import (get_admin_date_off, get_available_days, get_bar_user_phone_number, get_days_off,
+                                       get_unavailable_days, get_user_have_active_appointment, update_bar_user)
 
 client_router = Router()
 
@@ -35,9 +32,7 @@ async def command_start_handler(message: Message) -> None:
     admin_date_off = await get_admin_date_off()
     some_redis["admin_date_off"] = admin_date_off
 
-    user_have_active_appointment = await get_user_have_active_appointment(
-        message.from_user.id
-    )
+    user_have_active_appointment = await get_user_have_active_appointment(message.from_user.id)
     if user_have_active_appointment:
         await message.answer(
             f"🎉 Вы записаны, ждем Вас! \nДата: {user_have_active_appointment[0].strftime('%d %B %Y')}"
@@ -53,7 +48,7 @@ async def command_start_handler(message: Message) -> None:
         )
 
 
-@client_router.callback_query(SimpleCalendarCallback.filter(F.flag == 'user'))
+@client_router.callback_query(SimpleCalendarCallback.filter(F.flag == "user"))
 async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     unavailable_days = await get_unavailable_days()
     days_off = get_days_off()

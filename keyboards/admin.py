@@ -14,8 +14,8 @@ async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
-            for title, name in add_appointment.items()]
-        ,
+            for title, name in add_appointment.items()
+        ],
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
             for title, name in show_appointment.items()
@@ -34,18 +34,19 @@ async def change_date_option() -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
-            for title, name in date_options.items()]
+            for title, name in date_options.items()
+        ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
 
 
 async def get_admin_time_slot_buttons(selected_date: datetime) -> InlineKeyboardMarkup:
-
     buttons = []
     slots = await find_free_slots(selected_date.date())
-    keyboard_buttons = [InlineKeyboardButton(
-        text=f"{slot}", callback_data=AdminCallback(action=f"time_{str(slot.time.hour)}").pack()
-    ) for slot in slots]
+    keyboard_buttons = [
+        InlineKeyboardButton(text=f"{slot}", callback_data=AdminCallback(action=f"time_{str(slot.time.hour)}").pack())
+        for slot in slots
+    ]
     while keyboard_buttons:
         chunk = keyboard_buttons[:4]
         buttons.append(chunk)

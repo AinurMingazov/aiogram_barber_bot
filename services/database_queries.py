@@ -53,9 +53,7 @@ def get_available_days():
     today = datetime.now().date()
     start_date = today + timedelta(days=1)
     end_date = today + timedelta(days=21)
-    available_dates = [
-        start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)
-    ]
+    available_dates = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
     return available_dates
 
 
@@ -132,9 +130,7 @@ async def get_bar_user_phone_number(bar_user_id):
 async def update_bar_user(user_id, **kwargs):
     conn = async_session()
     async with conn.begin():
-        query_bar_user = (
-            update(BarUser).where(and_(BarUser.user_id == user_id)).values(kwargs)
-        )
+        query_bar_user = update(BarUser).where(and_(BarUser.user_id == user_id)).values(kwargs)
         await conn.execute(query_bar_user)
 
 
@@ -161,9 +157,7 @@ async def get_user_have_active_appointment(user_id):
     else:
         conn = async_session()
         async with conn.begin():
-            slot_query = select(TimeSlot).filter(
-                TimeSlot.id == active_appointment.time_slot_id
-            )
+            slot_query = select(TimeSlot).filter(TimeSlot.id == active_appointment.time_slot_id)
             slot_db = await conn.execute(slot_query)
         slot = slot_db.scalars().first()
         return active_appointment.date, slot.time
@@ -178,7 +172,7 @@ async def create_appointment(new_appointment):
 
 
 async def get_active_appointments(day=None):
-    for_day = ''
+    for_day = ""
     if day:
         for_day = f"AND pa.date = '{day}'"
     today = datetime.now().date()

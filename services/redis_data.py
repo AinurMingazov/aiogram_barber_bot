@@ -1,5 +1,5 @@
 from config import some_redis
-from services.database_queries import get_unavailable_days, get_admin_date_off, get_available_days, get_days_off
+from services.database_queries import get_admin_date_off, get_available_days, get_days_off, get_unavailable_days
 
 
 async def update_redis_cache():

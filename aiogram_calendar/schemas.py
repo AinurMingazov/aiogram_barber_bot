@@ -32,7 +32,7 @@ class CalendarCallback(CallbackData, prefix="calendar"):
     year: Optional[int] = None
     month: Optional[int] = None
     day: Optional[int] = None
-    flag: Optional[str] = 'user'
+    flag: Optional[str] = "user"
 
 
 class SimpleCalendarCallback(CalendarCallback, prefix="simple_calendar"):
@@ -69,9 +69,7 @@ class CalendarLabels(BaseModel):
         "Nov",
         "Dec",
     ]
-    cancel_caption: str = Field(
-        default="Cancel", description="Caprion for Cancel button"
-    )
+    cancel_caption: str = Field(default="Cancel", description="Caprion for Cancel button")
     today_caption: str = Field(default="Today", description="Caprion for Cancel button")
 
 

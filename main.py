@@ -21,10 +21,9 @@ logging.basicConfig(level=logging.INFO)
 
 @dp.message(Command("admin"))
 async def command_admin(message: Message) -> None:
-
     keyboard = await get_admin_choice_buttons()
     await message.answer(
-        f"🕹 Панель администратора\n",
+        "🕹 Панель администратора\n",
         reply_markup=keyboard,
         resize_keyboard=True,
     )
