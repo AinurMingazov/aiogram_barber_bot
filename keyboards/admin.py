@@ -28,13 +28,13 @@ async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
 
 
-async def change_date_option() -> InlineKeyboardMarkup:
+async def change_date_option(day_type) -> InlineKeyboardMarkup:
     date_options = {"make_fullwork": "Рабочий", "make_halfwork": "Не полный рабочий", "make_dayoff": "Выходной"}
 
     buttons = [
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
-            for title, name in date_options.items()
+            for title, name in date_options.items() if title.split('_')[1][0] != day_type.lower()[0]
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)

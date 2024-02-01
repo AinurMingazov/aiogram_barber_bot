@@ -7,7 +7,7 @@ from models import Appointment, BarUser, TimeSlot
 from session import async_session
 
 
-def get_dates(showed_days: int = 28) -> list[date]:
+def get_dates(showed_days: int = 95) -> list[date]:
     today = datetime.now().date()
     first_day = datetime.fromisocalendar(today.year, today.isocalendar()[1], 1).date()
     dates = [first_day + timedelta(days=i) for i in range(showed_days)]
@@ -28,6 +28,15 @@ def get_days_off() -> list[date]:
     days_off.extend(holidays)
 
     return days_off
+
+
+def get_half_work_days() -> list[date]:
+    dates = get_dates()
+    half_work_days = []
+    # Get sundays
+    saturdays = [day for day in dates if day.weekday() == 5]
+    half_work_days.extend(saturdays)
+    return half_work_days
 
 
 async def get_unavailable_days():
@@ -228,3 +237,22 @@ async def create_custom_day(new_custom_day):
         conn.add(new_custom_day)
         await conn.commit()
         return new_custom_day.date
+
+
+async def get_active_admin_days():
+    today = datetime.now().date()
+    conn = async_session()
+    async with conn.begin():
+        query_day = f"""SELECT date FROM panel_customday WHERE date >= '{today}'"""
+        day_db = await conn.execute(text(query_day))
+    admin_days = [day.date for day in day_db.all()]
+    return admin_days
+
+
+async def get_admin_day_status(day):
+    conn = async_session()
+    async with conn.begin():
+        query_day = f"""SELECT day_type FROM panel_customday WHERE date = '{day}'"""
+        day_db = await conn.execute(text(query_day))
+    day_type = day_db.scalars().first()
+    return day_type

@@ -13,6 +13,7 @@ from handlers.client import answer_wrong_date
 from keyboards.admin import change_date_option, get_admin_confirm_choice_buttons, get_admin_time_slot_buttons
 from models import CustomDay
 from services.appointments import add_admin_appointment
+from services.check_day import get_day_status
 from services.database_queries import create_custom_day
 
 admin_edit = Router()
@@ -117,8 +118,9 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
                 "Нельзя выбрать прошедшую дату",
             )
         else:
-            # add check day option
-            keyboard = await change_date_option()
+            day_type = await get_day_status(selected_date.date())
+
+            keyboard = await change_date_option(day_type)
             await callback_query.message.edit_text(
                 f"👍 Выбрана {selected_date_str} сделать день", reply_markup=keyboard, resize_keyboard=True
             )
