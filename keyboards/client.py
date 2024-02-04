@@ -2,7 +2,7 @@ from datetime import datetime
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
-from services.database_queries import find_free_slots
+from services.time_slots import find_free_slots
 
 
 async def get_time_slot_buttons(selected_date: datetime) -> InlineKeyboardMarkup:

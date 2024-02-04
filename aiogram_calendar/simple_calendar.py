@@ -8,15 +8,8 @@ from config import some_redis
 from services.redis_data import update_redis_cache
 
 from .common import GenericCalendar
-from .schemas import (
-    SimpleCalAct,
-    SimpleCalendarCallback,
-    highlight,
-    highlight_available_dates,
-    highlight_days_off,
-    highlight_unavailable_dates,
-    superscript,
-)
+from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates, highlight_days_off,
+                      highlight_unavailable_dates, superscript)
 
 
 class SimpleCalendar(GenericCalendar):

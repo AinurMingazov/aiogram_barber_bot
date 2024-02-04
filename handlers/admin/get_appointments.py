@@ -8,7 +8,7 @@ from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import some_redis
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
-from services.database_queries import get_active_appointments
+from services.appointments import get_active_appointments
 
 admin_get = Router()
 

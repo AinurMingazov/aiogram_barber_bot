@@ -10,15 +10,9 @@ from config import bot, some_redis
 from constants import denotation_client_days
 from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
 from services.appointments import add_appointment
-from services.database_queries import (
-    get_admin_date_off,
-    get_available_days,
-    get_bar_user_phone_number,
-    get_days_off,
-    get_unavailable_days,
-    get_user_have_active_appointment,
-    update_bar_user,
-)
+from services.calendar_days import get_available_days, get_days_off
+from services.custom_days import get_admin_date_off, get_unavailable_days
+from services.users import get_bar_user_phone_number, get_user_have_active_appointment, update_bar_user
 
 client_router = Router()
 
