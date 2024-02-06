@@ -6,6 +6,15 @@ from models import Appointment, BarUser, TimeSlot
 from session import async_session
 
 
+async def get_users_name_phone():
+    conn = async_session()
+    async with conn.begin():
+        query_users = select(BarUser)
+        users = await conn.execute(query_users)
+        users_name_phone = [[user.name, user.phone] for user in users.scalars().all()]
+        return users_name_phone
+
+
 async def create_or_get_bar_user(new_user):
     conn = async_session()
     async with conn.begin():

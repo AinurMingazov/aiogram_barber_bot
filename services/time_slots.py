@@ -1,8 +1,8 @@
-from datetime import datetime, time, timedelta
+from datetime import time
 
-from sqlalchemy import and_, select, text, update
+from sqlalchemy import select, text
 
-from models import Appointment, BarUser, TimeSlot
+from models import TimeSlot
 from session import async_session
 
 

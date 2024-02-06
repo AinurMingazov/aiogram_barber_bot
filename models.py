@@ -21,7 +21,7 @@ class Appointment(Base):
     date = Column(Date)
     time_slot_id = Column(Integer, ForeignKey("panel_timeslot.id"))
     bar_user_id = Column(Integer, ForeignKey("panel_baruser.id"))
-
+    is_approved = Column(Boolean)
     # Связи с моделями TimeSlot, User
     time_slot = relationship("TimeSlot")
     bar_user = relationship("BarUser")

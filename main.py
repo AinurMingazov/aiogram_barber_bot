@@ -7,13 +7,14 @@ from aiogram.types import Message
 
 from config import bot
 from handlers.admin.edit_appointments import admin_edit
+from handlers.admin.edit_users import admin_edit_users
 from handlers.admin.get_appointments import admin_get
 from handlers.client import client_router
 from keyboards.admin import get_admin_choice_buttons
 
 # Bot
 dp = Dispatcher()
-dp.include_routers(admin_get, admin_edit, client_router)
+dp.include_routers(admin_get, admin_edit, admin_edit_users, client_router)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
