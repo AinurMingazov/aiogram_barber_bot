@@ -4,6 +4,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from handlers import AdminCallback
 from services.time_slots import find_free_slots
+from services.users import get_active_users
 
 
 async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
@@ -62,5 +63,22 @@ async def get_admin_confirm_choice_buttons() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"conf_{key}").pack())
             for key, answer in confirm.items()
         ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
+async def get_admin_clients_buttons() -> InlineKeyboardMarkup:
+    users_buttons = {}
+    users = await get_active_users()
+    for user in users:
+        users_buttons[user[0]] = [user[1], user[2]]
+
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=f"🧒 {user[1]} 📞 {user[0]}", callback_data=AdminCallback(action=f"id_{user_id}").pack()
+            )
+        ]
+        for user_id, user in users_buttons.items()
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
