@@ -9,7 +9,7 @@ from session import async_session
 async def get_active_users():
     conn = async_session()
     async with conn.begin():
-        query_users = select(BarUser).filter(BarUser.is_active is True)
+        query_users = select(BarUser).filter(BarUser.is_active.is_(True))
         tmp_users = await conn.execute(query_users)
         users = [[user.id, user.phone, user.name] for user in tmp_users.scalars().all()]
         return users
@@ -60,6 +60,13 @@ async def update_bar_user(user_id, **kwargs):
     conn = async_session()
     async with conn.begin():
         query_bar_user = update(BarUser).where(and_(BarUser.user_id == user_id)).values(kwargs)
+        await conn.execute(query_bar_user)
+
+
+async def update_bar_user_by_id(user_id, **kwargs):
+    conn = async_session()
+    async with conn.begin():
+        query_bar_user = update(BarUser).where(and_(BarUser.id == int(user_id))).values(kwargs)
         await conn.execute(query_bar_user)
 
 

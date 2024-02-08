@@ -72,7 +72,6 @@ async def get_admin_clients_buttons() -> InlineKeyboardMarkup:
     users = await get_active_users()
     for user in users:
         users_buttons[user[0]] = [user[1], user[2]]
-
     buttons = [
         [
             InlineKeyboardButton(
@@ -80,5 +79,16 @@ async def get_admin_clients_buttons() -> InlineKeyboardMarkup:
             )
         ]
         for user_id, user in users_buttons.items()
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
+async def get_admin_clients_edit_buttons() -> InlineKeyboardMarkup:
+    edit_buttons = {"edit_name": "Имя", "edit_phone": "Номер телефона"}
+    buttons = [
+        [
+            InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{command}").pack())
+            for command, name in edit_buttons.items()
+        ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
