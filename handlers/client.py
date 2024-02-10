@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import bot, some_redis
+from config import bot, some_redis, admin_id
 from constants import denotation_client_days
 from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
 from services.appointments import add_appointment
@@ -125,9 +125,10 @@ async def get_confirm(callback_query: CallbackQuery):
         await callback_query.message.edit_text(
             f"🎉 Отлично, Вы записаны на\nДату: {some_redis[callback_query.message.chat.id]['on_date']}\n"
             f"Время: {some_redis[callback_query.message.chat.id]['on_time']}!\n"
-            f"В день стрижки 🤖 - Бот отправит напоминание\n\n",
+            f"Мы отправим сообщение об подтверждении заявки от администратора",
             resize_keyboard=True,
         )
+        await bot.send_message(int(admin_id), "Подтверди запись")
         user_phone_number = await get_bar_user_phone_number(bar_user_id)
         if not user_phone_number:
             markup = await ask_user_phone()
