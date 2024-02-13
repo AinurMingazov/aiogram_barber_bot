@@ -1,6 +1,9 @@
 version: '3.8'
 
 services:
+  bot:
+    build: ./
+    env_file: .env
 
   db:
     build:
@@ -23,12 +26,12 @@ services:
       - POSTGRES_SUPERUSER=${POSTGRES_SUPERUSER}
       - POSTGRES_SUPERUSER_PASSWORD=${POSTGRES_SUPERUSER_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -p 5432" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -p 5335" ]
       interval: 3s
       timeout: 5s
       retries: 10
     ports:
-      - 5432:5432
+      - 5335:5432
 
 volumes:
   postgres_data:
