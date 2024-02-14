@@ -10,7 +10,7 @@ from services.users import create_bar_user, create_or_get_bar_user
 from session import async_session
 
 
-async def add_appointment(message: Message) -> int:
+async def add_appointment(message: Message) -> tuple[int, int]:
     new_user = BarUser(
         user_id=message.chat.id,
         username=message.chat.username if message.chat.username else None,
@@ -25,8 +25,8 @@ async def add_appointment(message: Message) -> int:
         bar_user_id=bar_user_id,
         is_approved=False,
     )
-    await create_appointment(new_appointment)
-    return bar_user_id
+    appointment_id = await create_appointment(new_appointment)
+    return bar_user_id, appointment_id
 
 
 async def add_admin_appointment(message: Message) -> int:
@@ -91,3 +91,17 @@ async def get_active_appointments(day=None):
                 }
             ]
     return active_appointments_by_dates
+
+
+async def get_appointment(appointment_id: int):
+    conn = async_session()
+    async with conn.begin():
+        query_appointment = f"""
+            SELECT pa.date, pb.name, pt.time FROM panel_appointment pa
+             JOIN panel_baruser pb ON  pa.bar_user_id = pb.id
+             JOIN panel_timeslot pt ON pa.time_slot_id = pt.id
+            WHERE pa.id = {appointment_id}
+        """
+        appointment_db = await conn.execute(text(query_appointment))
+    appointment = appointment_db.first()
+    return appointment

@@ -6,10 +6,11 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import bot, some_redis, admin_id
+from config import admin_id, bot, some_redis
 from constants import denotation_client_days
+from keyboards.admin import approve_appointment_keyboard
 from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
-from services.appointments import add_appointment
+from services.appointments import add_appointment, get_appointment
 from services.calendar_days import get_available_days, get_days_off
 from services.custom_days import get_admin_date_off, get_unavailable_days
 from services.users import get_bar_user_phone_number, get_user_have_active_appointment, update_bar_user
@@ -120,7 +121,7 @@ async def get_time(callback_query: CallbackQuery):
 async def get_confirm(callback_query: CallbackQuery):
     confirm = callback_query.data.split("_")[1]
     if confirm.lower() == "✅ подтвердить":
-        bar_user_id = await add_appointment(callback_query.message)
+        bar_user_id, appointment_id = await add_appointment(callback_query.message)
 
         await callback_query.message.edit_text(
             f"🎉 Отлично, Вы записаны на\nДату: {some_redis[callback_query.message.chat.id]['on_date']}\n"
@@ -128,7 +129,15 @@ async def get_confirm(callback_query: CallbackQuery):
             f"Мы отправим сообщение об подтверждении заявки от администратора",
             resize_keyboard=True,
         )
-        await bot.send_message(int(admin_id), "Подтверди запись")
+        appointment = await get_appointment(appointment_id)
+        appointment_keyboard = await approve_appointment_keyboard()
+        await bot.send_message(
+            int(admin_id),
+            f"Подтверди запись\n{appointment.name} записался на\n"
+            f"Дату: {appointment.date} - Время: {appointment.time}!\n",
+            reply_markup=appointment_keyboard,
+        )
+
         user_phone_number = await get_bar_user_phone_number(bar_user_id)
         if not user_phone_number:
             markup = await ask_user_phone()
