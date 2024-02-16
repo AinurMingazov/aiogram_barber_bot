@@ -94,11 +94,11 @@ async def get_admin_clients_edit_buttons() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
 
 
-async def approve_appointment_keyboard() -> InlineKeyboardMarkup:
+async def approve_appointment_keyboard(user_id) -> InlineKeyboardMarkup:
     confirm = {"1": "✅ Подтвердить", "0": "❌ Отменить"}
     buttons = [
         [
-            InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"ap-conf_{key}").pack())
+            InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"ap-conf_{key}_{user_id}").pack())
             for key, answer in confirm.items()
         ]
     ]

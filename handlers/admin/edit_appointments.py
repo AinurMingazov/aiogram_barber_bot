@@ -6,13 +6,13 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import some_redis
+from config import some_redis, admin_id
 from constants import denotation_admin_days
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from keyboards.admin import change_date_option, get_admin_confirm_choice_buttons, get_admin_time_slot_buttons
 from models import CustomDay
-from services.appointments import add_admin_appointment
+from services.appointments import add_admin_appointment, approve_appointment
 from services.calendar_days import get_day_status
 from services.custom_days import create_custom_day
 
@@ -154,4 +154,25 @@ async def get_day_option(callback_query: CallbackQuery):
             f"🕛 {selected_date_str} - сделан выходным днем",
             resize_keyboard=True,
         )
+    del some_redis[callback_query.message.chat.id]
+
+
+@admin_edit.callback_query(AdminCallback.filter(F.action.startswith("ap-conf_")))
+async def get_confirm(callback_query: CallbackQuery):
+    answer = callback_query.data.split("_")
+    confirm, user_id = answer[1], answer[2]
+    appointment_id = some_redis.get(admin_id, None).get('confirm_appointment', None)
+
+    if int(confirm):
+        await callback_query.message.edit_text(
+            f"🎉  Вы записали клиента \n",
+            resize_keyboard=True,
+        )
+        updated_params = {"is_approved": True}
+        await approve_appointment(appointment_id, updated_params)
+        await send confirmation(user_id, appointment_id)
+    else:
+        await callback_query.message.edit_text("Вы отменили запись!")
+        await send_refusal(user_id, appointment_id)
+        await del_appointment(appointment_id)
     del some_redis[callback_query.message.chat.id]

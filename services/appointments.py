@@ -1,8 +1,7 @@
 from datetime import datetime
 
 from aiogram.types import Message
-from sqlalchemy import text
-
+from sqlalchemy import and_, update, text
 from config import some_redis
 from models import Appointment, BarUser
 from services.time_slots import get_time_slot_id
@@ -105,3 +104,12 @@ async def get_appointment(appointment_id: int):
         appointment_db = await conn.execute(text(query_appointment))
     appointment = appointment_db.first()
     return appointment
+
+# async def approve_appointment(appointment_id):
+
+
+async def update_appointment(appointment_id, **kwargs):
+    conn = async_session()
+    async with conn.begin():
+        query_appointment = update(Appointment).where(and_(Appointment.id == appointment_id)).values(kwargs)
+        await conn.execute(query_appointment)
