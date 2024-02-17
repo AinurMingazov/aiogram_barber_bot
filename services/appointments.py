@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from aiogram.types import Message
-from sqlalchemy import and_, update, text
+from sqlalchemy import and_, update, text, delete
 from config import some_redis
 from models import Appointment, BarUser
 from services.time_slots import get_time_slot_id
@@ -112,4 +112,11 @@ async def update_appointment(appointment_id, **kwargs):
     conn = async_session()
     async with conn.begin():
         query_appointment = update(Appointment).where(and_(Appointment.id == appointment_id)).values(kwargs)
+        await conn.execute(query_appointment)
+
+
+async def del_appointment(appointment_id):
+    conn = async_session()
+    async with conn.begin():
+        query_appointment = delete(Appointment).where(Appointment.id == appointment_id)
         await conn.execute(query_appointment)

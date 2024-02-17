@@ -6,13 +6,13 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import some_redis, admin_id
+from config import some_redis, admin_id, bot
 from constants import denotation_admin_days
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from keyboards.admin import change_date_option, get_admin_confirm_choice_buttons, get_admin_time_slot_buttons
 from models import CustomDay
-from services.appointments import add_admin_appointment, approve_appointment
+from services.appointments import add_admin_appointment, approve_appointment, del_appointment, get_appointment
 from services.calendar_days import get_day_status
 from services.custom_days import create_custom_day
 
@@ -170,9 +170,18 @@ async def get_confirm(callback_query: CallbackQuery):
         )
         updated_params = {"is_approved": True}
         await approve_appointment(appointment_id, updated_params)
-        await send confirmation(user_id, appointment_id)
+        await send_confirmation(user_id, appointment_id)
     else:
         await callback_query.message.edit_text("Вы отменили запись!")
         await send_refusal(user_id, appointment_id)
         await del_appointment(appointment_id)
     del some_redis[callback_query.message.chat.id]
+
+
+async def send_confirmation(user_id, appointment_id):
+    appointment = await get_appointment(appointment_id)
+    await bot.send_message(
+        int(user_id),
+        f"Ваша запись на\nДату: {appointment.date} - Время: {appointment.time}!\n"
+        f"Подтверждена администратором",
+    )
