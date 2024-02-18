@@ -6,4 +6,4 @@ some_redis = {"unavailable_days": [], "admin_date_off": [], "available_days": []
 
 bot = Bot(token=os.getenv("BBOT_TOKEN", ""), parse_mode="HTML")
 
-admin_id = os.getenv("ADMIN_ID", "")
+admin_id = int(os.getenv("ADMIN_ID", ""))

@@ -105,13 +105,11 @@ async def get_appointment(appointment_id: int):
     appointment = appointment_db.first()
     return appointment
 
-# async def approve_appointment(appointment_id):
-
 
 async def update_appointment(appointment_id, **kwargs):
     conn = async_session()
     async with conn.begin():
-        query_appointment = update(Appointment).where(and_(Appointment.id == appointment_id)).values(kwargs)
+        query_appointment = update(Appointment).where(Appointment.id == appointment_id).values(kwargs)
         await conn.execute(query_appointment)
 
 

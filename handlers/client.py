@@ -131,9 +131,12 @@ async def get_confirm(callback_query: CallbackQuery):
         )
         appointment = await get_appointment(appointment_id)
         appointment_keyboard = await approve_appointment_keyboard(callback_query.message.chat.id)
-        some_redis[admin_id] = {callback_query.message.chat.id: {'confirm_appointment': appointment.id, }}
+        # some_redis[admin_id] = {}
+        # some_redis[admin_id][callback_query.message.chat.id] = {}
+        # some_redis[admin_id][callback_query.message.chat.id]['confirm_appointment'] = appointment_id
+        some_redis[admin_id] = {callback_query.message.chat.id: {'confirm_appointment': appointment_id}}
         await bot.send_message(
-            int(admin_id),
+            admin_id,
             f"Подтверди запись\n{appointment.name} записался на\n"
             f"Дату: {appointment.date} - Время: {appointment.time}!\n",
             reply_markup=appointment_keyboard,

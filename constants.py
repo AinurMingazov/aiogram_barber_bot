@@ -16,3 +16,6 @@ denotation_client_days = """
 ⁝5⁝ - выходные
  6 - обычные даты на которые запись не ведется\n
 """
+
+admin_confirmed_appointment = f"Подтверждена администратором"
+admin_canceled_appointment = f"Отклонена администратором"
