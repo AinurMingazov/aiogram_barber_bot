@@ -161,7 +161,6 @@ async def get_day_option(callback_query: CallbackQuery):
 async def get_confirm(callback_query: CallbackQuery):
     answer = callback_query.data.split("_")
     confirm, user_id = answer[1], answer[2]
-    # appointment_id = some_redis.get(admin_id, None).get('confirm_appointment', None)
     appointment_id = some_redis.get(admin_id, None).get(int(user_id), None).get('confirm_appointment', None)
     if int(confirm):
         await callback_query.message.edit_text(

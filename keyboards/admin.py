@@ -3,7 +3,7 @@ from datetime import datetime
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from handlers import AdminCallback
-from services.time_slots import find_free_slots
+from services.time_slots import get_free_slots
 from services.users import get_active_users
 
 
@@ -44,7 +44,7 @@ async def change_date_option(day_type) -> InlineKeyboardMarkup:
 
 async def get_admin_time_slot_buttons(selected_date: datetime) -> InlineKeyboardMarkup:
     buttons = []
-    slots = await find_free_slots(selected_date.date())
+    slots = await get_free_slots(selected_date.date())
     keyboard_buttons = [
         InlineKeyboardButton(text=f"{slot}", callback_data=AdminCallback(action=f"time_{str(slot.time.hour)}").pack())
         for slot in slots

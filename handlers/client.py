@@ -131,9 +131,6 @@ async def get_confirm(callback_query: CallbackQuery):
         )
         appointment = await get_appointment(appointment_id)
         appointment_keyboard = await approve_appointment_keyboard(callback_query.message.chat.id)
-        # some_redis[admin_id] = {}
-        # some_redis[admin_id][callback_query.message.chat.id] = {}
-        # some_redis[admin_id][callback_query.message.chat.id]['confirm_appointment'] = appointment_id
         some_redis[admin_id] = {callback_query.message.chat.id: {'confirm_appointment': appointment_id}}
         await bot.send_message(
             admin_id,

@@ -15,15 +15,6 @@ async def get_active_users():
         return users
 
 
-async def get_users_name_phone():
-    conn = async_session()
-    async with conn.begin():
-        query_users = select(BarUser)
-        users = await conn.execute(query_users)
-        users_name_phone = [[user.name, user.phone] for user in users.scalars().all()]
-        return users_name_phone
-
-
 async def create_or_get_bar_user(new_user):
     conn = async_session()
     async with conn.begin():
@@ -59,14 +50,7 @@ async def get_bar_user_phone_number(bar_user_id):
 async def update_bar_user(user_id, **kwargs):
     conn = async_session()
     async with conn.begin():
-        query_bar_user = update(BarUser).where(and_(BarUser.user_id == user_id)).values(kwargs)
-        await conn.execute(query_bar_user)
-
-
-async def update_bar_user_by_id(user_id, **kwargs):
-    conn = async_session()
-    async with conn.begin():
-        query_bar_user = update(BarUser).where(and_(BarUser.id == int(user_id))).values(kwargs)
+        query_bar_user = update(BarUser).filter(BarUser.user_id == user_id).values(kwargs)
         await conn.execute(query_bar_user)
 
 

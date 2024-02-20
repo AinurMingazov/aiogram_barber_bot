@@ -1,8 +1,8 @@
 from datetime import time
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 
-from models import TimeSlot
+from models import TimeSlot, Appointment
 from session import async_session
 
 
@@ -16,25 +16,11 @@ async def get_time_slot_id(time_str):
     return slot.id
 
 
-async def find_slots():
+async def get_free_slots(day):
     conn = async_session()
     async with conn.begin():
-        slots_query = select(TimeSlot)
-        slots_db = await conn.execute(slots_query)
-    slots = slots_db.scalars().all()
-    slot_time = [slot for slot in slots]
-    return slot_time
-
-
-async def find_free_slots(day):
-    day.strftime("%Y-%m-%d")
-
-    conn = async_session()
-    async with conn.begin():
-        query_appointment = f"""SELECT pa.time_slot_id FROM panel_appointment pa
-                                WHERE pa.date = '{day.strftime('%Y-%m-%d')}'
-        """
-        busy_slots_db = await conn.execute(text(query_appointment))
+        query_appointment = select(Appointment.time_slot_id).filter(Appointment.date == day)
+        busy_slots_db = await conn.execute(query_appointment)
         slots_query = select(TimeSlot)
         slots_db = await conn.execute(slots_query)
     busy_slots = busy_slots_db.scalars().all()

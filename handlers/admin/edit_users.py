@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, Message
 from config import some_redis
 from handlers import AdminCallback
 from keyboards.admin import get_admin_clients_buttons, get_admin_clients_edit_buttons
-from services.users import update_bar_user_by_id
+from services.users import update_bar_user
 
 admin_edit_users = Router()
 
@@ -47,7 +47,7 @@ async def process_change_param(callback_query: CallbackQuery, state: FSMContext,
 async def save_changes(message: Message, state: FSMContext) -> None:
     data = some_redis[message.chat.id]
     updated_user_params = {data["choice"]: message.text}
-    await update_bar_user_by_id(data["user_id"], **updated_user_params)
+    await update_bar_user(data["user_id"], **updated_user_params)
     if data["choice"] == "name":
         await message.answer(f"👍 Имя клиента изменено на {message.text}")
     elif data["choice"] == "phone":
