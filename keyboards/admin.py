@@ -11,7 +11,7 @@ async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
     add_appointment = {"add_appointment": "Добавить запись"}
     show_appointment = {"all_appointments": "Посмотреть все записи", "day_appointments": "Посмотреть записи по дате"}
     change_day = {"change_day": "Изменение дней", "edit_users": "Изменение клиентов"}
-
+    add_vacation = {"add_vacation": "Добавить отпуск"}
     buttons = [
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
@@ -24,6 +24,10 @@ async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
             for title, name in change_day.items()
+        ],
+        [
+            InlineKeyboardButton(text=f"{name}", callback_data=AdminCallback(action=f"{title}").pack())
+            for title, name in add_vacation.items()
         ],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)

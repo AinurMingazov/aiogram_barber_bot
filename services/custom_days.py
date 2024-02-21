@@ -1,27 +1,37 @@
 from datetime import datetime, timedelta
+from sqlalchemy import text, select, func, cast, Date
 
-from sqlalchemy import text
-
+from models import TimeSlot, Appointment
 from session import async_session
 
 
 async def get_unavailable_days():
+    full_work_days = ['2024-02-23', '2024-02-24', '2024-02-25']
+    half_work_days = ['2024-02-23', '2024-02-24', '2024-02-25']
+    unavailable_full_work_days = await get_unavailable_work_days(full_work_days, 'FULL_WORK')
+    unavailable_half_work_days = await get_unavailable_work_days(half_work_days, 'HALF_WORK')
+    return unavailable_full_work_days + unavailable_half_work_days
+
+
+async def get_unavailable_work_days(days, day_type=None):
+    n = 1
+    if day_type == 'HALF_WORK':
+        n = 2
+    today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
-        today = datetime.now().date()
-        start_date = today + timedelta(days=1)
-        end_date = today + timedelta(days=21)
-        start_date = start_date.strftime("%Y-%m-%d")
-        end_date = end_date.strftime("%Y-%m-%d")
 
-        query_appointment = f"""select pa.date, count(*) from panel_appointment pa
-                                where pa.date between '{start_date}' and '{end_date}'
-                                group by pa.date
-                                having count(*) >= 8
-        """
-        unavailable_days = await conn.execute(text(query_appointment))
-        unavailable_dates = [day.date for day in unavailable_days]
-        return unavailable_dates
+        subquery = select(func.count(TimeSlot.id)/n).scalar_subquery()
+        unavailable_work_days_query = select(Appointment.date).filter(
+            Appointment.date.in_([
+                today,
+                ])).join(TimeSlot).group_by(Appointment.date).having(func.count(TimeSlot.id.distinct()) == subquery)
+        unavailable_work_days_db = await conn.execute(unavailable_work_days_query)
+
+    unavailable_work_days = unavailable_work_days_db.scalars().all()
+    unavailable_work_days = [day for day in unavailable_work_days]
+
+    return unavailable_work_days
 
 
 async def get_admin_date_off():
