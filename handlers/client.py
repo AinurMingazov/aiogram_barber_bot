@@ -12,7 +12,7 @@ from keyboards.admin import approve_appointment_keyboard
 from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
 from services.appointments import add_appointment, get_appointment
 from services.calendar_days import get_available_days, get_days_off
-from services.custom_days import get_admin_date_off, get_unavailable_days
+from services.custom_days import get_custom_days, get_unavailable_days
 from services.users import get_bar_user_phone_number, get_user_have_active_appointment, update_bar_user
 
 client_router = Router()
@@ -31,7 +31,7 @@ async def command_start_handler(message: Message) -> None:
     unavailable_days = await get_unavailable_days()
     some_redis["unavailable_days"] = unavailable_days
 
-    admin_date_off = await get_admin_date_off()
+    admin_date_off = await get_custom_days()
     some_redis["admin_date_off"] = admin_date_off
 
     user_have_active_appointment = await get_user_have_active_appointment(message.from_user.id)
@@ -111,7 +111,8 @@ async def get_time(callback_query: CallbackQuery):
     keyboard = await get_confirm_choice_buttons()
     await callback_query.message.edit_text(
         f"👍 Отлично, подтвердите запись на\n 🗓 Дата:"
-        f" {some_redis[callback_query.message.chat.id]['on_date']}\n ⌚ Время: {some_redis[callback_query.message.chat.id]['on_time']}",
+        f" {some_redis[callback_query.message.chat.id]['on_date']}\n "
+        f"⌚ Время: {some_redis[callback_query.message.chat.id]['on_time']}",
         reply_markup=keyboard,
         resize_keyboard=True,
     )

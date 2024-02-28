@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from sqlalchemy import text, select, func, cast, Date
+from sqlalchemy import text, select, func, cast, Date, and_
 
-from models import TimeSlot, Appointment
+from models import TimeSlot, Appointment, CustomDay
 from session import async_session
 
 
@@ -34,18 +34,16 @@ async def get_unavailable_work_days(days, day_type=None):
     return unavailable_work_days
 
 
-async def get_admin_date_off():
+async def get_custom_days(day_type: str = 'DAY_OFF'):
     today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
-        query_day_off = f"""SELECT date 
-                              FROM panel_customday 
-                             WHERE date >= '{today}'
-                               AND day_type = 'DAY_OFF'
-        """
-        day_off_db = await conn.execute(text(query_day_off))
-    days_off = [day.date for day in day_off_db.all()]
-    return days_off
+        query_days = select(CustomDay.date).filter(
+            and_(CustomDay.date >= today, CustomDay.day_type == day_type)
+        )
+        days_db = await conn.execute(query_days)
+        days = days_db.scalars().all()
+    return days
 
 
 async def create_custom_day(new_custom_day):
@@ -60,16 +58,16 @@ async def get_active_admin_days():
     today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
-        query_day = f"""SELECT date FROM panel_customday WHERE date >= '{today}'"""
-        day_db = await conn.execute(text(query_day))
-    admin_days = [day.date for day in day_db.all()]
-    return admin_days
+        query_days = select(CustomDay.date).filter(CustomDay.date >= today)
+        days_db = await conn.execute(query_days)
+        days = days_db.scalars().all()
+    return days
 
 
 async def get_admin_day_status(day):
     conn = async_session()
     async with conn.begin():
-        query_day = f"""SELECT day_type FROM panel_customday WHERE date = '{day}'"""
-        day_db = await conn.execute(text(query_day))
-    day_type = day_db.scalars().first()
+        query_day_type = select(CustomDay.day_type).filter(CustomDay.date == day)
+        day_type_db = await conn.execute(query_day_type)
+        day_type = day_type_db.scalars().first()
     return day_type

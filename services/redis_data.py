@@ -1,13 +1,13 @@
 from config import some_redis
 from services.calendar_days import get_available_days, get_days_off
-from services.custom_days import get_admin_date_off, get_unavailable_days
+from services.custom_days import get_custom_days, get_unavailable_days
 
 
 async def update_redis_cache():
     unavailable_days = await get_unavailable_days()
     some_redis["unavailable_days"] = unavailable_days
 
-    admin_date_off = await get_admin_date_off()
+    admin_date_off = await get_custom_days()
     some_redis["admin_date_off"] = admin_date_off
 
     available_days = get_available_days()
