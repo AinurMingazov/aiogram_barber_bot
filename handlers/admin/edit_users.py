@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message
 
 from config import some_redis
 from handlers import AdminCallback
+from handlers.client import command_start_handler
 from keyboards.admin import get_admin_clients_buttons, get_admin_clients_edit_buttons
 from services.users import update_bar_user
 
@@ -23,9 +24,9 @@ async def choose_user(callback_query: CallbackQuery, callback_data: AdminCallbac
 
 @admin_edit_users.callback_query(AdminCallback.filter(F.action.startswith("id_")))
 async def choose_change_param(callback_query: CallbackQuery):
-    user_id = callback_query.data.split("_")[1]
+    bar_user_id = callback_query.data.split("_")[1]
     some_redis[callback_query.message.chat.id] = {}
-    some_redis[callback_query.message.chat.id]["user_id"] = user_id
+    some_redis[callback_query.message.chat.id]["bar_user_id"] = bar_user_id
     keyboard = await get_admin_clients_edit_buttons()
     await callback_query.message.edit_text("Редактировать", reply_markup=keyboard, resize_keyboard=True)
 
@@ -37,7 +38,7 @@ async def process_change_param(callback_query: CallbackQuery, state: FSMContext,
         await state.set_state(ClientEditForm.edit_field)
         some_redis[callback_query.message.chat.id]["choice"] = "name"
         await callback_query.message.edit_text("Напиши имя клиента")
-    if edit_choice == "phone":
+    elif edit_choice == "phone":
         await state.set_state(ClientEditForm.edit_field)
         some_redis[callback_query.message.chat.id]["choice"] = "phone"
         await callback_query.message.edit_text("Напиши номер телефона клиента (Пример: 89123456789)")
@@ -47,8 +48,11 @@ async def process_change_param(callback_query: CallbackQuery, state: FSMContext,
 async def save_changes(message: Message, state: FSMContext) -> None:
     data = some_redis[message.chat.id]
     updated_user_params = {data["choice"]: message.text}
-    await update_bar_user(data["user_id"], **updated_user_params)
+    await update_bar_user(int(data["bar_user_id"]), **updated_user_params)
     if data["choice"] == "name":
         await message.answer(f"👍 Имя клиента изменено на {message.text}")
     elif data["choice"] == "phone":
         await message.answer(f"👍 Номер клиента изменен на {message.text}")
+
+    await command_start_handler("/start")
+

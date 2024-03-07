@@ -42,6 +42,7 @@ async def add_admin_appointment(message: Message) -> int:
         date=datetime.strptime(data["on_date"], "%d %B %Y").date(),
         time_slot_id=time_slot_id,
         bar_user_id=bar_user_id,
+        is_approved=True,
     )
     await create_appointment(new_appointment)
     return bar_user_id
