@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from aiogram.types import Message
-from sqlalchemy import and_, update, text, delete
+from sqlalchemy import delete, text, update
+
 from config import some_redis
 from models import Appointment, BarUser
 from services.time_slots import get_time_slot_id

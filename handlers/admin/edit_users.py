@@ -5,9 +5,8 @@ from aiogram.types import CallbackQuery, Message
 
 from config import some_redis
 from handlers import AdminCallback
-from handlers.client import command_start_handler
-from keyboards.admin import get_admin_clients_buttons, get_admin_clients_edit_buttons
-from services.users import update_bar_user
+from keyboards.admin import get_admin_clients_buttons, get_admin_clients_edit_buttons, get_admin_confirm_change_user
+from services.users import update_bar_user_by_id
 
 admin_edit_users = Router()
 
@@ -47,12 +46,35 @@ async def process_change_param(callback_query: CallbackQuery, state: FSMContext,
 @admin_edit_users.message(ClientEditForm.edit_field)
 async def save_changes(message: Message, state: FSMContext) -> None:
     data = some_redis[message.chat.id]
-    updated_user_params = {data["choice"]: message.text}
-    await update_bar_user(int(data["bar_user_id"]), **updated_user_params)
+    keyboard = await get_admin_confirm_change_user(message.text)
     if data["choice"] == "name":
-        await message.answer(f"👍 Имя клиента изменено на {message.text}")
+        await message.answer(
+            f"👍 Изменить имя клиента на {message.text}",
+            reply_markup=keyboard,
+            resize_keyboard=True,
+        )
     elif data["choice"] == "phone":
-        await message.answer(f"👍 Номер клиента изменен на {message.text}")
+        await message.answer(
+            f"👍 Изменить номер клиента на {message.text}",
+            reply_markup=keyboard,
+            resize_keyboard=True,
+        )
+    await state.update_data(name=message.text)
+    await state.clear()
 
-    await command_start_handler("/start")
 
+@admin_edit_users.callback_query(AdminCallback.filter(F.action.startswith("confuser_")))
+async def get_confirm(callback_query: CallbackQuery):
+    response = callback_query.data.split("_")
+    confirm, value = response[1], response[2]
+    if int(confirm):
+        data = some_redis[callback_query.message.chat.id]
+        updated_user_params = {data["choice"]: value}
+        await update_bar_user_by_id(int(data["bar_user_id"]), **updated_user_params)
+        await callback_query.message.edit_text(
+            "🎉 Данные клиента изменены",
+            resize_keyboard=True,
+        )
+    else:
+        await callback_query.message.edit_text("Вы отменили изменения!")
+    del some_redis[callback_query.message.chat.id]

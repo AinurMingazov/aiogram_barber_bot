@@ -13,7 +13,7 @@ from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_tim
 from services.appointments import add_appointment, get_appointment
 from services.calendar_days import get_available_days, get_days_off
 from services.custom_days import get_custom_days, get_unavailable_days
-from services.users import get_bar_user_phone_number, get_user_have_active_appointment, update_bar_user
+from services.users import get_bar_user_phone_number, get_user_have_active_appointment, update_bar_user_by_user_id
 
 client_router = Router()
 
@@ -132,7 +132,7 @@ async def get_confirm(callback_query: CallbackQuery):
         )
         appointment = await get_appointment(appointment_id)
         appointment_keyboard = await approve_appointment_keyboard(callback_query.message.chat.id)
-        some_redis[admin_id] = {callback_query.message.chat.id: {'confirm_appointment': appointment_id}}
+        some_redis[admin_id] = {callback_query.message.chat.id: {"confirm_appointment": appointment_id}}
         await bot.send_message(
             admin_id,
             f"Подтверди запись\n{appointment.name} записался на\n"
@@ -156,7 +156,7 @@ async def get_confirm(callback_query: CallbackQuery):
 @client_router.message(F.contact)
 async def func_contact(message: Message):
     updated_user_params = {"phone": message.contact.phone_number}
-    await update_bar_user(message.chat.id, **updated_user_params)
+    await update_bar_user_by_user_id(message.chat.id, **updated_user_params)
     await message.answer(
         "Спасибо, Ваш номер сохранен!",
         resize_keyboard=True,

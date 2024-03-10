@@ -1,31 +1,40 @@
-from datetime import datetime, timedelta
-from sqlalchemy import text, select, func, cast, Date, and_
+from datetime import datetime
 
-from models import TimeSlot, Appointment, CustomDay
+from sqlalchemy import and_, func, select
+
+from models import Appointment, CustomDay, TimeSlot
 from session import async_session
 
 
 async def get_unavailable_days():
-    full_work_days = ['2024-02-23', '2024-02-24', '2024-02-25']
-    half_work_days = ['2024-02-23', '2024-02-24', '2024-02-25']
-    unavailable_full_work_days = await get_unavailable_work_days(full_work_days, 'FULL_WORK')
-    unavailable_half_work_days = await get_unavailable_work_days(half_work_days, 'HALF_WORK')
+    full_work_days = ["2024-02-23", "2024-02-24", "2024-02-25"]
+    half_work_days = ["2024-02-23", "2024-02-24", "2024-02-25"]
+    unavailable_full_work_days = await get_unavailable_work_days(full_work_days, "FULL_WORK")
+    unavailable_half_work_days = await get_unavailable_work_days(half_work_days, "HALF_WORK")
     return unavailable_full_work_days + unavailable_half_work_days
 
 
 async def get_unavailable_work_days(days, day_type=None):
     n = 1
-    if day_type == 'HALF_WORK':
+    if day_type == "HALF_WORK":
         n = 2
     today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
-
-        subquery = select(func.count(TimeSlot.id)/n).scalar_subquery()
-        unavailable_work_days_query = select(Appointment.date).filter(
-            Appointment.date.in_([
-                today,
-                ])).join(TimeSlot).group_by(Appointment.date).having(func.count(TimeSlot.id.distinct()) == subquery)
+        subquery = select(func.count(TimeSlot.id) / n).scalar_subquery()
+        unavailable_work_days_query = (
+            select(Appointment.date)
+            .filter(
+                Appointment.date.in_(
+                    [
+                        today,
+                    ]
+                )
+            )
+            .join(TimeSlot)
+            .group_by(Appointment.date)
+            .having(func.count(TimeSlot.id.distinct()) == subquery)
+        )
         unavailable_work_days_db = await conn.execute(unavailable_work_days_query)
 
     unavailable_work_days = unavailable_work_days_db.scalars().all()
@@ -34,13 +43,11 @@ async def get_unavailable_work_days(days, day_type=None):
     return unavailable_work_days
 
 
-async def get_custom_days(day_type: str = 'DAY_OFF'):
+async def get_custom_days(day_type: str = "DAY_OFF"):
     today = datetime.now().date()
     conn = async_session()
     async with conn.begin():
-        query_days = select(CustomDay.date).filter(
-            and_(CustomDay.date >= today, CustomDay.day_type == day_type)
-        )
+        query_days = select(CustomDay.date).filter(and_(CustomDay.date >= today, CustomDay.day_type == day_type))
         days_db = await conn.execute(query_days)
         days = days_db.scalars().all()
     return days

@@ -47,10 +47,17 @@ async def get_bar_user_phone_number(bar_user_id):
             return bar_user.phone
 
 
-async def update_bar_user(user_id, **kwargs):
+async def update_bar_user_by_user_id(user_id, **kwargs):
     conn = async_session()
     async with conn.begin():
-        query_bar_user = update(BarUser).filter(BarUser.id == user_id).values(kwargs)
+        query_bar_user = update(BarUser).filter(BarUser.user_id == user_id).values(kwargs)
+        await conn.execute(query_bar_user)
+
+
+async def update_bar_user_by_id(bar_user_id, **kwargs):
+    conn = async_session()
+    async with conn.begin():
+        query_bar_user = update(BarUser).filter(BarUser.id == bar_user_id).values(kwargs)
         await conn.execute(query_bar_user)
 
 

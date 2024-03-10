@@ -71,6 +71,17 @@ async def get_admin_confirm_choice_buttons() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
 
 
+async def get_admin_confirm_change_user(value) -> InlineKeyboardMarkup:
+    confirm = {"1": "✅ Подтвердить", "0": "❌ Отменить"}
+    buttons = [
+        [
+            InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"confuser_{key}_{value}").pack())
+            for key, answer in confirm.items()
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
 async def get_admin_clients_buttons() -> InlineKeyboardMarkup:
     users_buttons = {}
     users = await get_active_users()
@@ -102,7 +113,9 @@ async def approve_appointment_keyboard(user_id) -> InlineKeyboardMarkup:
     confirm = {"1": "✅ Подтвердить", "0": "❌ Отменить"}
     buttons = [
         [
-            InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"ap-conf_{key}_{user_id}").pack())
+            InlineKeyboardButton(
+                text=f"{answer}", callback_data=AdminCallback(action=f"ap-conf_{key}_{user_id}").pack()
+            )
             for key, answer in confirm.items()
         ]
     ]

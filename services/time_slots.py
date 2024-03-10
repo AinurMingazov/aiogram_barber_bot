@@ -2,7 +2,7 @@ from datetime import time
 
 from sqlalchemy import select
 
-from models import TimeSlot, Appointment
+from models import Appointment, TimeSlot
 from session import async_session
 
 
