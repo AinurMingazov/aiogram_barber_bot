@@ -14,15 +14,12 @@ ASYNC_DATABASE_URL = url.URL.create(
     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
 )
 
-engine = create_async_engine(ASYNC_DATABASE_URL, future=True, execution_options={"isolation_level": "AUTOCOMMIT"})
+engine = create_async_engine(ASYNC_DATABASE_URL, future=True)
 
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
 async def get_db() -> Generator:
     """Dependency for getting async session"""
-    try:
-        session: AsyncSession = async_session()
+    async with async_session() as session:
         yield session
-    finally:
-        await session.close()

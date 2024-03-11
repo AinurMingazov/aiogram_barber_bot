@@ -4,10 +4,10 @@ from aiogram.types import Message
 from sqlalchemy import delete, text, update
 
 from config import some_redis
+from db.db_session import async_session
 from models import Appointment, BarUser
 from services.time_slots import get_time_slot_id
 from services.users import create_bar_user, create_or_get_bar_user
-from session import async_session
 
 
 async def add_appointment(message: Message) -> tuple[int, int]:
@@ -50,11 +50,11 @@ async def add_admin_appointment(message: Message) -> int:
 
 
 async def create_appointment(new_appointment):
-    conn = async_session()
-    async with conn.begin():
-        conn.add(new_appointment)
-        await conn.commit()
-        return new_appointment.id
+    async with async_session() as session:
+        async with session.begin():
+            session.add(new_appointment)
+            await session.commit()
+            return new_appointment.id
 
 
 async def get_active_appointments(day=None):
@@ -62,16 +62,16 @@ async def get_active_appointments(day=None):
     if day:
         for_day = f"AND pa.date = '{day}'"
     today = datetime.now().date()
-    conn = async_session()
-    async with conn.begin():
-        query_appointments = f"""SELECT pa.date, pb.name, pb.phone, pt.time FROM panel_appointment pa
-                                   JOIN panel_baruser pb ON  pa.bar_user_id = pb.id
-                                   JOIN panel_timeslot pt ON pa.time_slot_id = pt.id
-                                  WHERE pa.date >= '{today}'
-                                  {for_day}                                  
-                               ORDER BY pa.date, pt.time
-        """
-        appointments_db = await conn.execute(text(query_appointments))
+    async with async_session() as session:
+        async with session.begin():
+            query_appointments = f"""SELECT pa.date, pb.name, pb.phone, pt.time FROM panel_appointment pa
+                                       JOIN panel_baruser pb ON  pa.bar_user_id = pb.id
+                                       JOIN panel_timeslot pt ON pa.time_slot_id = pt.id
+                                      WHERE pa.date >= '{today}'
+                                      {for_day}                                  
+                                   ORDER BY pa.date, pt.time
+            """
+            appointments_db = await session.execute(text(query_appointments))
     appointments = appointments_db.all()
     active_appointments_by_dates = {}
     for appointment in appointments:
@@ -95,28 +95,28 @@ async def get_active_appointments(day=None):
 
 
 async def get_appointment(appointment_id: int):
-    conn = async_session()
-    async with conn.begin():
-        query_appointment = f"""
-            SELECT pa.date, pb.name, pt.time FROM panel_appointment pa
-             JOIN panel_baruser pb ON  pa.bar_user_id = pb.id
-             JOIN panel_timeslot pt ON pa.time_slot_id = pt.id
-            WHERE pa.id = {appointment_id}
-        """
-        appointment_db = await conn.execute(text(query_appointment))
-    appointment = appointment_db.first()
-    return appointment
+    async with async_session() as session:
+        async with session.begin():
+            query_appointment = f"""
+                SELECT pa.date, pb.name, pt.time FROM panel_appointment pa
+                 JOIN panel_baruser pb ON  pa.bar_user_id = pb.id
+                 JOIN panel_timeslot pt ON pa.time_slot_id = pt.id
+                WHERE pa.id = {appointment_id}
+            """
+            appointment_db = await session.execute(text(query_appointment))
+        appointment = appointment_db.first()
+        return appointment
 
 
 async def update_appointment(appointment_id, **kwargs):
-    conn = async_session()
-    async with conn.begin():
-        query_appointment = update(Appointment).where(Appointment.id == appointment_id).values(kwargs)
-        await conn.execute(query_appointment)
+    async with async_session() as session:
+        async with session.begin():
+            query_appointment = update(Appointment).where(Appointment.id == appointment_id).values(kwargs)
+            await session.execute(query_appointment)
 
 
 async def del_appointment(appointment_id):
-    conn = async_session()
-    async with conn.begin():
-        query_appointment = delete(Appointment).where(Appointment.id == appointment_id)
-        await conn.execute(query_appointment)
+    async with async_session() as session:
+        async with session.begin():
+            query_appointment = delete(Appointment).where(Appointment.id == appointment_id)
+            await session.execute(query_appointment)
