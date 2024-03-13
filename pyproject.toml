@@ -12,6 +12,7 @@ aiogram = "^3.3.0"
 workalendar = "^17.0.0"
 sqlalchemy = "^2.0.25"
 asyncpg = "^0.29.0"
+aioredis = "^2.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
