@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from aiogram import F, Router
@@ -8,6 +9,7 @@ from aiogram.utils.markdown import hbold
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import admin_id, bot, some_redis
 from constants import denotation_client_days
+from db.db_session import redis
 from keyboards.admin import approve_appointment_keyboard
 from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
 from services.appointments import add_appointment, get_appointment
@@ -28,11 +30,16 @@ async def command_start_handler(message: Message) -> None:
     """
     This handler receives messages with `/start` command
     """
+
     unavailable_days = await get_unavailable_days()
+    await redis.set("unavailable_days", json.dumps(unavailable_days, default=str))
     some_redis["unavailable_days"] = unavailable_days
 
     admin_date_off = await get_custom_days()
+    await redis.set("admin_date_off", json.dumps(admin_date_off, default=str))
     some_redis["admin_date_off"] = admin_date_off
+    admin_date_off = json.loads(await redis.get("admin_date_off"))
+    unavailable_days = json.loads(await redis.get("unavailable_days"))
 
     user_have_active_appointment = await get_user_have_active_appointment(message.from_user.id)
     if user_have_active_appointment:

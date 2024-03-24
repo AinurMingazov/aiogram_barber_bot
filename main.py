@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 
 from aiogram import Dispatcher
@@ -6,6 +7,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from config import bot
+from db.db_session import redis
 from handlers.admin.edit_appointments import admin_edit
 from handlers.admin.edit_users import admin_edit_users
 from handlers.admin.get_appointments import admin_get
@@ -33,7 +35,10 @@ async def command_admin(message: Message) -> None:
 async def main():
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
-
+    await redis.set("unavailable_days", json.dumps([]))
+    await redis.set("admin_date_off", json.dumps([]))
+    await redis.set("available_days", json.dumps([]))
+    await redis.set("date_off", json.dumps([]))
 
 if __name__ == "__main__":
     asyncio.run(main())
