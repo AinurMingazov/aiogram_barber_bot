@@ -69,7 +69,7 @@ async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: 
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        some_redis[callback_query.message.chat.id] = {"on_date": selected_date_str}
+        await redis.set(callback_query.message.chat.id, json.dumps({"on_date": selected_date_str}))
 
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(
@@ -114,12 +114,14 @@ async def answer_wrong_date(callback_query: CallbackQuery, selected_date_str: st
 @client_router.callback_query(lambda query: query.data.startswith("time_"))
 async def get_time(callback_query: CallbackQuery):
     selected_time_str = callback_query.data.split("_")[1]
-    some_redis[callback_query.message.chat.id]["on_time"] = selected_time_str
+    appointment_cache = json.loads(await redis.get(callback_query.message.chat.id))
+    appointment_cache["on_time"] = selected_time_str
+    await redis.set(callback_query.message.chat.id, json.dumps(appointment_cache))
     keyboard = await get_confirm_choice_buttons()
     await callback_query.message.edit_text(
         f"👍 Отлично, подтвердите запись на\n 🗓 Дата:"
-        f" {some_redis[callback_query.message.chat.id]['on_date']}\n "
-        f"⌚ Время: {some_redis[callback_query.message.chat.id]['on_time']}",
+        f" {appointment_cache['on_date']}\n "
+        f"⌚ Время: {appointment_cache['on_time']}",
         reply_markup=keyboard,
         resize_keyboard=True,
     )
@@ -130,16 +132,16 @@ async def get_confirm(callback_query: CallbackQuery):
     confirm = callback_query.data.split("_")[1]
     if confirm.lower() == "✅ подтвердить":
         bar_user_id, appointment_id = await add_appointment(callback_query.message)
-
+        appointment_cache = json.loads(await redis.get(callback_query.message.chat.id))
         await callback_query.message.edit_text(
-            f"🎉 Отлично, Вы записаны на\nДату: {some_redis[callback_query.message.chat.id]['on_date']}\n"
-            f"Время: {some_redis[callback_query.message.chat.id]['on_time']}!\n"
+            f"🎉 Отлично, Вы записаны на\nДату: {appointment_cache['on_date']}\n"
+            f"Время: {appointment_cache['on_time']}!\n"
             f"Мы отправим сообщение об подтверждении заявки от администратора",
             resize_keyboard=True,
         )
         appointment = await get_appointment(appointment_id)
         appointment_keyboard = await approve_appointment_keyboard(callback_query.message.chat.id)
-        some_redis[admin_id] = {callback_query.message.chat.id: {"confirm_appointment": appointment_id}}
+        await redis.set(admin_id, json.dumps({callback_query.message.chat.id: {"confirm_appointment": appointment_id}}))
         await bot.send_message(
             admin_id,
             f"Подтверди запись\n{appointment.name} записался на\n"
@@ -157,7 +159,7 @@ async def get_confirm(callback_query: CallbackQuery):
             )
     else:
         await callback_query.message.edit_text("Вы отменили запись!")
-    del some_redis[callback_query.message.chat.id]
+    await redis.delete(callback_query.message.chat.id)
 
 
 @client_router.message(F.contact)

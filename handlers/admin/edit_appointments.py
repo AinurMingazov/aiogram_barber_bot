@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from aiogram import F, Router
@@ -6,8 +7,9 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id, bot, some_redis
+from config import admin_id, bot
 from constants import admin_canceled_appointment, admin_confirmed_appointment, denotation_admin_days
+from db.db_session import redis
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from keyboards.admin import change_date_option, get_admin_confirm_choice_buttons, get_admin_time_slot_buttons
@@ -39,8 +41,7 @@ async def get_appointment_day(callback_query: CallbackQuery, callback_data: Simp
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        some_redis[callback_query.message.chat.id] = {"on_date": selected_date_str}
-
+        await redis.set(callback_query.message.chat.id, json.dumps({"on_date": selected_date_str}))
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(
                 callback_query,
@@ -59,7 +60,9 @@ async def get_appointment_day(callback_query: CallbackQuery, callback_data: Simp
 @admin_edit.callback_query(AdminCallback.filter(F.action.startswith("time_")))
 async def set_appointment_time(callback_query: CallbackQuery, state: FSMContext, callback_data: AdminCallback):
     selected_time_str = callback_query.data.split("_")[1] + ":00"
-    some_redis[callback_query.message.chat.id]["on_time"] = selected_time_str
+    appointment_cache = json.loads(await redis.get(callback_query.message.chat.id))
+    appointment_cache["on_time"] = selected_time_str
+    await redis.set(callback_query.message.chat.id, json.dumps(appointment_cache))
     await state.set_state(ClientForm.name)
     await callback_query.message.edit_text("Напиши имя клиента")
 
@@ -67,10 +70,12 @@ async def set_appointment_time(callback_query: CallbackQuery, state: FSMContext,
 @admin_edit.message(ClientForm.name)
 async def process_name(message: Message, state: FSMContext) -> None:
     keyboard = await get_admin_confirm_choice_buttons()
-    some_redis[message.chat.id]["user_name"] = message.text
+    appointment_cache = json.loads(await redis.get(message.chat.id))
+    appointment_cache["user_name"] = message.text
+    await redis.set(message.chat.id, json.dumps(appointment_cache))
     await message.answer(
         f"👍 Записать клиента {message.text}\n 🗓 Дата:"
-        f" {some_redis[message.chat.id]['on_date']}\n ⌚ Время: {some_redis[message.chat.id]['on_time']}",
+        f" {appointment_cache['on_date']}\n ⌚ Время: {appointment_cache['on_time']}",
         reply_markup=keyboard,
         resize_keyboard=True,
     )
@@ -82,15 +87,16 @@ async def process_name(message: Message, state: FSMContext) -> None:
 async def get_confirm(callback_query: CallbackQuery):
     confirm = callback_query.data.split("_")[1]
     if int(confirm):
+        appointment_cache = json.loads(await redis.get(callback_query.message.chat.id))
         await add_admin_appointment(callback_query.message)
         await callback_query.message.edit_text(
-            f"🎉 Отлично, Вы записали клиента {some_redis[callback_query.message.chat.id]['user_name']}\nДату: {some_redis[callback_query.message.chat.id]['on_date']}\n"
-            f"Время: {some_redis[callback_query.message.chat.id]['on_time']}!\n",
+            f"🎉 Отлично, Вы записали клиента {appointment_cache['user_name']}\nДату: {appointment_cache['on_date']}\n"
+            f"Время: {appointment_cache['on_time']}!\n",
             resize_keyboard=True,
         )
     else:
         await callback_query.message.edit_text("Вы отменили запись!")
-    del some_redis[callback_query.message.chat.id]
+    await redis.get(callback_query.message.chat.id)
 
 
 @admin_edit.callback_query(AdminCallback.filter(F.action == "change_day"))
@@ -109,8 +115,7 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        some_redis[callback_query.message.chat.id] = {}
-        some_redis[callback_query.message.chat.id]["change_day"] = selected_date
+        await redis.set(admin_id, json.dumps({callback_query.message.chat.id: {"change_day": selected_date}}))
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(
                 callback_query,
@@ -129,8 +134,8 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
 @admin_edit.callback_query(AdminCallback.filter(F.action.startswith("make_")))
 async def get_day_option(callback_query: CallbackQuery):
     option = callback_query.data.split("_")[1]
-
-    selected_date = some_redis[callback_query.message.chat.id]["change_day"]
+    appointment_cache = json.loads(await redis.get(callback_query.message.chat.id))
+    selected_date = appointment_cache["change_day"]
     selected_date_str = selected_date.strftime("%d %B %Y")
 
     if option == "fullwork":
@@ -154,14 +159,15 @@ async def get_day_option(callback_query: CallbackQuery):
             f"🕛 {selected_date_str} - сделан выходным днем",
             resize_keyboard=True,
         )
-    del some_redis[callback_query.message.chat.id]
+    await redis.delete(callback_query.message.chat.id)
 
 
 @admin_edit.callback_query(AdminCallback.filter(F.action.startswith("ap-conf_")))
 async def get_confirm_appointment(callback_query: CallbackQuery):
     answer = callback_query.data.split("_")
     confirm, user_id = answer[1], answer[2]
-    appointment_id = some_redis.get(admin_id, None).get(int(user_id), None).get("confirm_appointment", None)
+    appointment_cache = json.loads(await redis.get(admin_id))
+    appointment_id = appointment_cache.get(int(user_id), None).get("confirm_appointment", None)
     if int(confirm):
         await callback_query.message.edit_text(
             "🎉 Вы записали клиента",
@@ -174,7 +180,7 @@ async def get_confirm_appointment(callback_query: CallbackQuery):
         await callback_query.message.edit_text("Вы отменили запись!")
         await send_appointment_status(user_id, appointment_id, False)
         await del_appointment(appointment_id)
-    del some_redis[callback_query.message.chat.id]
+    await redis.delete(callback_query.message.chat.id)
 
 
 async def send_appointment_status(user_id, appointment_id, status):

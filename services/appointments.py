@@ -1,10 +1,10 @@
+import json
 from datetime import datetime
 
 from aiogram.types import Message
 from sqlalchemy import delete, text, update
 
-from config import some_redis
-from db.db_session import async_session
+from db.db_session import async_session, redis
 from models import Appointment, BarUser
 from services.time_slots import get_time_slot_id
 from services.users import create_bar_user, create_or_get_bar_user
@@ -17,10 +17,11 @@ async def add_appointment(message: Message) -> tuple[int, int]:
         name=message.chat.first_name if message.chat.first_name else None,
         is_active=True,
     )
-    time_slot_id = await get_time_slot_id(some_redis[message.chat.id]["on_time"])
+    appointment_cache = json.loads(await redis.get(message.chat.id))
+    time_slot_id = await get_time_slot_id(appointment_cache["on_time"])
     bar_user_id = await create_or_get_bar_user(new_user)
     new_appointment = Appointment(
-        date=datetime.strptime(some_redis[message.chat.id]["on_date"], "%d %B %Y").date(),
+        date=datetime.strptime(appointment_cache["on_date"], "%d %B %Y").date(),
         time_slot_id=time_slot_id,
         bar_user_id=bar_user_id,
         is_approved=False,
@@ -30,17 +31,17 @@ async def add_appointment(message: Message) -> tuple[int, int]:
 
 
 async def add_admin_appointment(message: Message) -> int:
-    data = some_redis[message.chat.id]
+    appointment_cache = json.loads(await redis.get(message.chat.id))
     new_user = BarUser(
         user_id=None,
         username=None,
-        name=data["user_name"],
+        name=appointment_cache["user_name"],
         is_active=True,
     )
-    time_slot_id = await get_time_slot_id(data["on_time"])
+    time_slot_id = await get_time_slot_id(appointment_cache["on_time"])
     bar_user_id = await create_bar_user(new_user)
     new_appointment = Appointment(
-        date=datetime.strptime(data["on_date"], "%d %B %Y").date(),
+        date=datetime.strptime(appointment_cache["on_date"], "%d %B %Y").date(),
         time_slot_id=time_slot_id,
         bar_user_id=bar_user_id,
         is_approved=True,
