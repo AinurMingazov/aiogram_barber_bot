@@ -4,8 +4,8 @@ from datetime import date, datetime, timedelta
 
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import some_redis
-from services.redis_data import update_redis_cache
+from config import common_dates
+from services.redis_data import update_common_dates
 
 from .common import GenericCalendar
 from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates, highlight_days_off,
@@ -25,19 +25,19 @@ class SimpleCalendar(GenericCalendar):
         :param int month: Month to use in the calendar, if None the current month is used.
         :return: Returns InlineKeyboardMarkup object with the calendar.
         """
-        await update_redis_cache()
+        await update_common_dates()
         today = datetime.now()
         now_weekday = self._labels.days_of_week[today.weekday()]
         now_month, now_year, now_day = today.month, today.year, today.day
 
-        date_off = some_redis["date_off"]
-        admin_date_off = some_redis["admin_date_off"]
+        date_off = common_dates["date_off"]
+        admin_date_off = common_dates["admin_date_off"]
         date_off = list(itertools.chain(date_off, admin_date_off))
 
         unavailable_dates, available_days = [], []
         if flag == "user":
-            unavailable_dates = some_redis["unavailable_days"]
-            available_days = some_redis["available_days"]
+            unavailable_dates = common_dates["unavailable_days"]
+            available_days = common_dates["available_days"]
 
         def highlight_month():
             month_str = self._labels.months[month - 1]

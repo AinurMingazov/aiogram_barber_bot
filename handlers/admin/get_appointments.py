@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import some_redis
+from config import common_dates
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from services.appointments import get_active_appointments
@@ -45,7 +45,7 @@ async def show_appointments_for_day(callback_query: CallbackQuery, callback_data
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        some_redis[callback_query.message.chat.id] = {"on_date": selected_date_str}
+        common_dates[callback_query.message.chat.id] = {"on_date": selected_date_str}
 
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(

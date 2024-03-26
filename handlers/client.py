@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id, bot, some_redis
+from config import admin_id, bot, common_dates
 from constants import denotation_client_days
 from db.db_session import redis
 from keyboards.admin import approve_appointment_keyboard
@@ -32,14 +32,10 @@ async def command_start_handler(message: Message) -> None:
     """
 
     unavailable_days = await get_unavailable_days()
-    await redis.set("unavailable_days", json.dumps(unavailable_days, default=str))
-    some_redis["unavailable_days"] = unavailable_days
+    common_dates["unavailable_days"] = unavailable_days
 
     admin_date_off = await get_custom_days()
-    await redis.set("admin_date_off", json.dumps(admin_date_off, default=str))
-    some_redis["admin_date_off"] = admin_date_off
-    admin_date_off = json.loads(await redis.get("admin_date_off"))
-    unavailable_days = json.loads(await redis.get("unavailable_days"))
+    common_dates["admin_date_off"] = admin_date_off
 
     user_have_active_appointment = await get_user_have_active_appointment(message.from_user.id)
     if user_have_active_appointment:

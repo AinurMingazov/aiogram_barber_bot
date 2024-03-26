@@ -115,7 +115,7 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")
-        await redis.set(admin_id, json.dumps({callback_query.message.chat.id: {"change_day": selected_date}}))
+        await redis.set(admin_id, json.dumps({callback_query.message.chat.id: {"change_day": selected_date_str}}))
         if selected_date.date() < datetime.now().date():
             await answer_wrong_date(
                 callback_query,
@@ -134,26 +134,26 @@ async def change_day_option(callback_query: CallbackQuery, callback_data: Simple
 @admin_edit.callback_query(AdminCallback.filter(F.action.startswith("make_")))
 async def get_day_option(callback_query: CallbackQuery):
     option = callback_query.data.split("_")[1]
-    appointment_cache = json.loads(await redis.get(callback_query.message.chat.id))
-    selected_date = appointment_cache["change_day"]
-    selected_date_str = selected_date.strftime("%d %B %Y")
+    appointment_cache = json.loads(await redis.get(admin_id))
+    selected_date_str = appointment_cache[str(callback_query.message.chat.id)]["change_day"]
+    selected_date = datetime.strptime(selected_date_str, "%d %B %Y").date()
 
     if option == "fullwork":
-        custom_day = CustomDay(date=selected_date.date(), day_type="DAY_OFF")
+        custom_day = CustomDay(date=selected_date, day_type="DAY_OFF")
         await create_custom_day(custom_day)
         await callback_query.message.edit_text(
             f"🕛 {selected_date_str} - сделан рабочим днем",
             resize_keyboard=True,
         )
     elif option == "halfwork":
-        custom_day = CustomDay(date=selected_date.date(), day_type="HALF_WORKDAY")
+        custom_day = CustomDay(date=selected_date, day_type="HALF_WORKDAY")
         await create_custom_day(custom_day)
         await callback_query.message.edit_text(
             f"🕛 {selected_date_str} - сделан не полным рабочим днем",
             resize_keyboard=True,
         )
     elif option == "dayoff":
-        custom_day = CustomDay(date=selected_date.date(), day_type="DAY_OFF")
+        custom_day = CustomDay(date=selected_date, day_type="DAY_OFF")
         await create_custom_day(custom_day)
         await callback_query.message.edit_text(
             f"🕛 {selected_date_str} - сделан выходным днем",
