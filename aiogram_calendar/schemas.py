@@ -77,8 +77,8 @@ class CalendarLabels(BaseModel):
 
 
 HIGHLIGHT_FORMAT = "[{}]"
-DAYS_OFF = "⁝{}⁝"
-UNAVAILABLE_DATES = "∶{}∶"
+UNAVAILABLE_DATES = "⁝{}⁝"
+HALF_WORK_DATES = ":{}:"
 AVAILABLE_DATES = "∙{}∙"
 
 
@@ -86,12 +86,12 @@ def highlight(text):
     return HIGHLIGHT_FORMAT.format(text)
 
 
-def highlight_days_off(text):
-    return DAYS_OFF.format(text)
-
-
 def highlight_unavailable_dates(text):
     return UNAVAILABLE_DATES.format(text)
+
+
+def highlight_half_work_dates(text):
+    return HALF_WORK_DATES.format(text)
 
 
 def highlight_available_dates(text):

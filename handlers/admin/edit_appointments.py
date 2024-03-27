@@ -15,8 +15,7 @@ from handlers.client import answer_wrong_date
 from keyboards.admin import change_date_option, get_admin_confirm_choice_buttons, get_admin_time_slot_buttons
 from models import CustomDay
 from services.appointments import add_admin_appointment, del_appointment, get_appointment, update_appointment
-from services.calendar_days import get_day_status
-from services.custom_days import create_custom_day
+from services.custom_days import create_custom_day, get_day_status
 
 admin_edit = Router()
 
