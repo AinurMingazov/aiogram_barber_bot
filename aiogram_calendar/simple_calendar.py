@@ -5,10 +5,12 @@ from datetime import date, datetime, timedelta
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import common_dates
+from services.calendar_days import get_days_off, get_available_days, get_half_work_days
+from services.custom_days import get_custom_days, get_unavailable_days
 from services.redis_data import update_common_dates
 
 from .common import GenericCalendar
-from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates, highlight_days_off,
+from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates, highlight_half_work_dates,
                       highlight_unavailable_dates, superscript)
 
 
@@ -25,19 +27,18 @@ class SimpleCalendar(GenericCalendar):
         :param int month: Month to use in the calendar, if None the current month is used.
         :return: Returns InlineKeyboardMarkup object with the calendar.
         """
-        await update_common_dates()
         today = datetime.now()
         now_weekday = self._labels.days_of_week[today.weekday()]
         now_month, now_year, now_day = today.month, today.year, today.day
 
-        date_off = common_dates["date_off"]
-        admin_date_off = common_dates["admin_date_off"]
-        date_off = list(itertools.chain(date_off, admin_date_off))
+        unavailable_days = get_days_off()
+        half_work_days = get_half_work_days()
+        available_days = get_available_days()
 
-        unavailable_dates, available_days = [], []
-        if flag == "user":
-            unavailable_dates = common_dates["unavailable_days"]
-            available_days = common_dates["available_days"]
+        closed_dates = await get_unavailable_days()
+        custom_unavailable_days = await get_custom_days("DAY_OFF")
+        custom_half_work_days = await get_custom_days("HALF_WORK")
+        custom_available_days = await get_custom_days("FULL_WORK")
 
         def highlight_month():
             month_str = self._labels.months[month - 1]
@@ -64,11 +65,16 @@ class SimpleCalendar(GenericCalendar):
 
             if now_month == month and now_year == year and now_day == day:
                 return highlight(day_string)
-            elif current_date in date_off:
-                return highlight_days_off(day_string)
-            elif current_date in unavailable_dates:
+            elif current_date in closed_dates:
                 return highlight_unavailable_dates(day_string)
-            elif current_date in available_days:
+            elif (current_date in list(itertools.chain(half_work_days + custom_half_work_days))
+                  and current_date not in list(itertools.chain(custom_unavailable_days + custom_available_days))):
+                return highlight_half_work_dates(day_string)
+            elif (current_date in list(itertools.chain(unavailable_days + custom_unavailable_days))
+                  and current_date not in list(itertools.chain(custom_half_work_days + custom_available_days))):
+                return highlight_unavailable_dates(day_string)
+            elif (current_date in list(itertools.chain(available_days + custom_available_days))
+                  and current_date not in list(itertools.chain(custom_unavailable_days + custom_half_work_days))):
                 return highlight_available_dates(day_string)
             return day_string
 

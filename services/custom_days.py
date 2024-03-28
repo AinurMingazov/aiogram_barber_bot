@@ -34,8 +34,9 @@ async def get_unavailable_work_days(days, day_type=None):
             unavailable_work_days_db = await session.execute(unavailable_work_days_query)
 
             unavailable_work_days = unavailable_work_days_db.scalars().all()
+            if unavailable_work_days is None:
+                return []
             unavailable_work_days = [day for day in unavailable_work_days]
-
             return unavailable_work_days
 
 
@@ -46,6 +47,8 @@ async def get_custom_days(day_type: str = "DAY_OFF"):
             query_days = select(CustomDay.date).filter(and_(CustomDay.date >= today, CustomDay.day_type == day_type))
             days_db = await session.execute(query_days)
             days = days_db.scalars().all()
+            if days is None:
+                return []
             return days
 
 
