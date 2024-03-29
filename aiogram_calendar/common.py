@@ -50,7 +50,7 @@ class GenericCalendar:
         self.min_date = min_date
         self.max_date = max_date
 
-    async def process_day_select(self, data, query):
+    async def process_day_select(self, data, query, flag):
         """Checks selected date is in allowed range of dates"""
         date = datetime(int(data.year), int(data.month), int(data.day))
         if self.min_date and self.min_date > date:
@@ -58,12 +58,12 @@ class GenericCalendar:
                 f'The date have to be later {self.min_date.strftime("%d/%m/%Y")}',
                 show_alert=self.show_alerts,
             )
-            return False, None
+            return False, None, None
         elif self.max_date and self.max_date < date:
             await query.answer(
                 f'The date have to be before {self.max_date.strftime("%d/%m/%Y")}',
                 show_alert=self.show_alerts,
             )
-            return False, None
+            return False, None, None
         await query.message.delete_reply_markup()  # removing inline keyboard
-        return True, date
+        return True, date, flag

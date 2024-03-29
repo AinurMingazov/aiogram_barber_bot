@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, update
 
 from db.db_session import async_session
 from models import Appointment, CustomDay, TimeSlot
@@ -52,12 +52,24 @@ async def get_custom_days(day_type: str = "DAY_OFF"):
             return days
 
 
-async def create_custom_day(new_custom_day):
+async def create_or_update_custom_day(new_custom_day):
     async with async_session() as session:
         async with session.begin():
-            session.add(new_custom_day)
-            await session.commit()
-            return new_custom_day.date
+            query_custom_day = select(CustomDay.date).filter(CustomDay.date == new_custom_day.date)
+            custom_day = await session.execute(query_custom_day)
+            custom_day = custom_day.scalars().first()
+            if custom_day:
+                query_custom_day = (
+                    update(CustomDay)
+                    .filter(CustomDay.date == new_custom_day.date)
+                    .values(day_type=new_custom_day.day_type)
+                )
+                await session.execute(query_custom_day)
+                return custom_day
+            else:
+                session.add(new_custom_day)
+                await session.commit()
+                return new_custom_day.date
 
 
 async def get_active_admin_days():

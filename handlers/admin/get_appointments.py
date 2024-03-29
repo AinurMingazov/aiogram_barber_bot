@@ -41,7 +41,7 @@ async def get_day_appointments(callback_query: CallbackQuery, callback_data: Adm
 async def show_appointments_for_day(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     calendar = SimpleCalendar(show_alerts=True)
     calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
-    is_selected, selected_date = await calendar.process_selection(callback_query, callback_data)
+    is_selected, selected_date = await calendar.process_selection(callback_query, callback_data, "admin")
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")

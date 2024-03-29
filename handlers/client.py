@@ -43,7 +43,7 @@ async def command_start_handler(message: Message) -> None:
         await message.answer(
             f"👋 Добрый день, {hbold(message.from_user.full_name)}! \n"
             f"🗓 Выберите желаемую дату для записи!{denotation_client_days}",
-            reply_markup=await SimpleCalendar().start_calendar(),
+            reply_markup=await SimpleCalendar().start_calendar(flag="user"),
         )
 
 
@@ -55,7 +55,7 @@ async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: 
 
     calendar = SimpleCalendar(show_alerts=True)
     calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
-    is_selected, selected_date = await calendar.process_selection(callback_query, callback_data)
+    is_selected, selected_date, flag = await calendar.process_selection(callback_query, callback_data, "user")
 
     if is_selected:
         selected_date_str = selected_date.strftime("%d %B %Y")

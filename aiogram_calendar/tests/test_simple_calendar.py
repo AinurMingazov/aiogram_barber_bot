@@ -117,5 +117,5 @@ testset = [
 @pytest.mark.parametrize("callback_data, expected", testset)
 async def test_process_selection(callback_data, expected):
     query = AsyncMock()
-    result = await SimpleCalendar().process_selection(query=query, data=callback_data)
+    result = await SimpleCalendar().process_selection(query=query, data=callback_data, flag="admin")
     assert result == expected

@@ -4,14 +4,12 @@ from datetime import date, datetime, timedelta
 
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import common_dates
-from services.calendar_days import get_days_off, get_available_days, get_half_work_days
+from services.calendar_days import get_available_days, get_days_off, get_half_work_days
 from services.custom_days import get_custom_days, get_unavailable_days
-from services.redis_data import update_common_dates
 
 from .common import GenericCalendar
-from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates, highlight_half_work_dates,
-                      highlight_unavailable_dates, superscript)
+from .schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates,
+                      highlight_half_work_dates, highlight_unavailable_dates, superscript)
 
 
 class SimpleCalendar(GenericCalendar):
@@ -67,14 +65,17 @@ class SimpleCalendar(GenericCalendar):
                 return highlight(day_string)
             elif current_date in closed_dates:
                 return highlight_unavailable_dates(day_string)
-            elif (current_date in list(itertools.chain(half_work_days + custom_half_work_days))
-                  and current_date not in list(itertools.chain(custom_unavailable_days + custom_available_days))):
+            elif current_date in list(
+                itertools.chain(half_work_days + custom_half_work_days)
+            ) and current_date not in list(itertools.chain(custom_unavailable_days + custom_available_days)):
                 return highlight_half_work_dates(day_string)
-            elif (current_date in list(itertools.chain(unavailable_days + custom_unavailable_days))
-                  and current_date not in list(itertools.chain(custom_half_work_days + custom_available_days))):
+            elif current_date in list(
+                itertools.chain(unavailable_days + custom_unavailable_days)
+            ) and current_date not in list(itertools.chain(custom_half_work_days + custom_available_days)):
                 return highlight_unavailable_dates(day_string)
-            elif (current_date in list(itertools.chain(available_days + custom_available_days))
-                  and current_date not in list(itertools.chain(custom_unavailable_days + custom_half_work_days))):
+            elif current_date in list(
+                itertools.chain(available_days + custom_available_days)
+            ) and current_date not in list(itertools.chain(custom_unavailable_days + custom_half_work_days)):
                 return highlight_available_dates(day_string)
             return day_string
 
@@ -87,7 +88,9 @@ class SimpleCalendar(GenericCalendar):
         years_row.append(
             InlineKeyboardButton(
                 text="<<",
-                callback_data=SimpleCalendarCallback(act=SimpleCalAct.prev_y, year=year, month=month, day=1).pack(),
+                callback_data=SimpleCalendarCallback(
+                    act=SimpleCalAct.prev_y, year=year, month=month, day=1, flag=flag
+                ).pack(),
             )
         )
         years_row.append(
@@ -99,7 +102,9 @@ class SimpleCalendar(GenericCalendar):
         years_row.append(
             InlineKeyboardButton(
                 text=">>",
-                callback_data=SimpleCalendarCallback(act=SimpleCalAct.next_y, year=year, month=month, day=1).pack(),
+                callback_data=SimpleCalendarCallback(
+                    act=SimpleCalAct.next_y, year=year, month=month, day=1, flag=flag
+                ).pack(),
             )
         )
         kb.append(years_row)
@@ -109,14 +114,18 @@ class SimpleCalendar(GenericCalendar):
         month_row.append(
             InlineKeyboardButton(
                 text="<",
-                callback_data=SimpleCalendarCallback(act=SimpleCalAct.prev_m, year=year, month=month, day=1).pack(),
+                callback_data=SimpleCalendarCallback(
+                    act=SimpleCalAct.prev_m, year=year, month=month, day=1, flag=flag
+                ).pack(),
             )
         )
         month_row.append(InlineKeyboardButton(text=highlight_month(), callback_data=self.ignore_callback))
         month_row.append(
             InlineKeyboardButton(
                 text=">",
-                callback_data=SimpleCalendarCallback(act=SimpleCalAct.next_m, year=year, month=month, day=1).pack(),
+                callback_data=SimpleCalendarCallback(
+                    act=SimpleCalAct.next_m, year=year, month=month, day=1, flag=flag
+                ).pack(),
             )
         )
         kb.append(month_row)
@@ -170,12 +179,12 @@ class SimpleCalendar(GenericCalendar):
         kb.append(cancel_row)
         return InlineKeyboardMarkup(row_width=7, inline_keyboard=kb)
 
-    async def _update_calendar(self, query: CallbackQuery, with_date: datetime):
+    async def _update_calendar(self, query: CallbackQuery, with_date: datetime, flag):
         await query.message.edit_reply_markup(
-            reply_markup=await self.start_calendar(int(with_date.year), int(with_date.month))
+            reply_markup=await self.start_calendar(int(with_date.year), int(with_date.month), flag)
         )
 
-    async def process_selection(self, query: CallbackQuery, data: SimpleCalendarCallback) -> tuple:
+    async def process_selection(self, query: CallbackQuery, data: SimpleCalendarCallback, flag) -> tuple:
         """
         Process the callback_query. This method generates a new calendar if forward or
         backward is pressed. This method should be called inside a CallbackQueryHandler.
@@ -184,7 +193,7 @@ class SimpleCalendar(GenericCalendar):
         :return: Returns a tuple (Boolean,datetime), indicating if a date is selected
                     and returning the date if so.
         """
-        return_data = (False, None)
+        return_data = (False, None, None)
 
         # processing empty buttons, answering with no action
         if data.act == SimpleCalAct.ignore:
@@ -195,28 +204,28 @@ class SimpleCalendar(GenericCalendar):
 
         # user picked a day button, return date
         if data.act == SimpleCalAct.day:
-            return await self.process_day_select(data, query)
+            return await self.process_day_select(data, query, flag)
 
         # user navigates to previous year, editing message with new calendar
         if data.act == SimpleCalAct.prev_y:
             prev_date = datetime(int(data.year) - 1, int(data.month), 1)
-            await self._update_calendar(query, prev_date)
+            await self._update_calendar(query, prev_date, flag)
         # user navigates to next year, editing message with new calendar
         if data.act == SimpleCalAct.next_y:
             next_date = datetime(int(data.year) + 1, int(data.month), 1)
-            await self._update_calendar(query, next_date)
+            await self._update_calendar(query, next_date, flag)
         # user navigates to previous month, editing message with new calendar
         if data.act == SimpleCalAct.prev_m:
             prev_date = temp_date - timedelta(days=1)
-            await self._update_calendar(query, prev_date)
+            await self._update_calendar(query, prev_date, flag)
         # user navigates to next month, editing message with new calendar
         if data.act == SimpleCalAct.next_m:
             next_date = temp_date + timedelta(days=31)
-            await self._update_calendar(query, next_date)
+            await self._update_calendar(query, next_date, flag)
         if data.act == SimpleCalAct.today:
             next_date = datetime.now()
             if next_date.year != int(data.year) or next_date.month != int(data.month):
-                await self._update_calendar(query, datetime.now())
+                await self._update_calendar(query, datetime.now(), flag)
             else:
                 await query.answer(cache_time=60)
         if data.act == SimpleCalAct.cancel:
