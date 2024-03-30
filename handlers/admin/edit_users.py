@@ -36,11 +36,15 @@ async def process_change_param(callback_query: CallbackQuery, state: FSMContext,
     edit_choice = callback_query.data.split("_")[1]
     if edit_choice == "name":
         await state.set_state(ClientEditForm.edit_field)
-        await redis.set(callback_query.message.chat.id, json.dumps({"choice": "name"}))
+        user_cache = json.loads(await redis.get(callback_query.message.chat.id))
+        user_cache["choice"] = "name"
+        await redis.set(callback_query.message.chat.id, json.dumps(user_cache))
         await callback_query.message.edit_text("Напиши имя клиента")
     elif edit_choice == "phone":
         await state.set_state(ClientEditForm.edit_field)
-        await redis.set(callback_query.message.chat.id, json.dumps({"choice": "phone"}))
+        user_cache = json.loads(await redis.get(callback_query.message.chat.id))
+        user_cache["choice"] = "phone"
+        await redis.set(callback_query.message.chat.id, json.dumps(user_cache))
         await callback_query.message.edit_text("Напиши номер телефона клиента (Пример: 89123456789)")
 
 

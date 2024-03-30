@@ -103,7 +103,7 @@ async def get_confirm_appointment(callback_query: CallbackQuery):
     answer = callback_query.data.split("_")
     confirm, user_id = answer[1], answer[2]
     appointment_cache = json.loads(await redis.get(admin_id))
-    appointment_id = appointment_cache.get(int(user_id), None).get("confirm_appointment", None)
+    appointment_id = appointment_cache.get(user_id, None).get("confirm_appointment", None)
     if int(confirm):
         await callback_query.message.edit_text(
             "🎉 Вы записали клиента",
