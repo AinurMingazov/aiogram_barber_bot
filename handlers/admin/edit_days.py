@@ -1,16 +1,16 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id
+from config import admin_id, calendar_dates_range
 from constants import denotation_admin_days
 from db.db_session import redis
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
-from keyboards.admin import change_date_option
+from keyboards.admin import change_date_option, get_admin_confirm_vacation
 from models import CustomDay
 from services.custom_days import create_or_update_custom_day, get_day_status
 
@@ -28,7 +28,7 @@ async def choose_day(callback_query: CallbackQuery, callback_data: AdminCallback
 @admin_edit_days.callback_query(SimpleCalendarCallback.filter(F.flag == "admin_edit_day"))
 async def change_day_option(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     calendar = SimpleCalendar(show_alerts=True)
-    calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
+    calendar.set_dates_range(*calendar_dates_range)
     is_selected, selected_date, flag = await calendar.process_selection(callback_query, callback_data, "admin_edit_day")
 
     if is_selected:
@@ -78,3 +78,93 @@ async def get_day_option(callback_query: CallbackQuery):
             resize_keyboard=True,
         )
     await redis.delete(callback_query.message.chat.id)
+
+
+@admin_edit_days.callback_query(AdminCallback.filter(F.action == "add_vacation"))
+async def add_vacation(callback_query: CallbackQuery, callback_data: AdminCallback):
+    await callback_query.message.edit_text(
+        "🗓 Выберите первый день отпуска!",
+        reply_markup=await SimpleCalendar().start_calendar(flag="admin_vacation_first_day"),
+    )
+
+
+@admin_edit_days.callback_query(SimpleCalendarCallback.filter(F.flag == "admin_vacation_first_day"))
+async def set_vacation_first_day(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
+    calendar = SimpleCalendar(show_alerts=True)
+    calendar.set_dates_range(*calendar_dates_range)
+    is_selected, selected_date, flag = await calendar.process_selection(
+        callback_query, callback_data, "admin_vacation_first_day"
+    )
+
+    if is_selected:
+        selected_date_str = selected_date.strftime("%d %B %Y")
+        await redis.set(callback_query.message.chat.id, json.dumps({"admin_vacation_first_day": selected_date_str}))
+        if selected_date.date() < datetime.now().date():
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "Нельзя выбрать прошедшую дату",
+            )
+        else:
+            await callback_query.message.edit_text(
+                "🗓 Выберите последний день отпуска!",
+                reply_markup=await SimpleCalendar().start_calendar(flag="admin_vacation_last_day"),
+            )
+
+
+@admin_edit_days.callback_query(SimpleCalendarCallback.filter(F.flag == "admin_vacation_last_day"))
+async def set_vacation_last_day(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
+    calendar = SimpleCalendar(show_alerts=True)
+    calendar.set_dates_range(*calendar_dates_range)
+    is_selected, selected_date, flag = await calendar.process_selection(
+        callback_query, callback_data, "admin_vacation_last_day"
+    )
+
+    if is_selected:
+        selected_date_str = selected_date.strftime("%d %B %Y")
+        days_cache = json.loads(await redis.get(callback_query.message.chat.id))
+        days_cache["admin_vacation_last_day"] = selected_date_str
+        await redis.set(callback_query.message.chat.id, json.dumps(days_cache))
+        if selected_date.date() < datetime.now().date():
+            await answer_wrong_date(
+                callback_query,
+                selected_date_str,
+                "Нельзя выбрать прошедшую дату",
+            )
+        else:
+            days_cache = json.loads(await redis.get(callback_query.message.chat.id))
+            first_day = days_cache["admin_vacation_first_day"]
+            keyboard = await get_admin_confirm_vacation()
+            await callback_query.message.edit_text(
+                f"👍 Подтвердите отпуск с {first_day} по {selected_date_str}",
+                reply_markup=keyboard,
+                resize_keyboard=True,
+            )
+
+
+@admin_edit_days.callback_query(AdminCallback.filter(F.action.startswith("confvac_")))
+async def get_confirm(callback_query: CallbackQuery):
+    confirm = callback_query.data.split("_")[1]
+    if int(confirm):
+        days_cache = json.loads(await redis.get(callback_query.message.chat.id))
+        first_day = datetime.strptime(days_cache["admin_vacation_first_day"], "%d %B %Y").date()
+        last_day = datetime.strptime(days_cache["admin_vacation_last_day"], "%d %B %Y").date()
+        for dt in date_range(first_day, last_day):
+            custom_day = CustomDay(date=dt, day_type="DAY_OFF")
+            await create_or_update_custom_day(custom_day)
+        await callback_query.message.edit_text(
+            f"🎉 Отлично, Вы назначили себе отпуск с {days_cache['admin_vacation_first_day']} по {days_cache['admin_vacation_last_day']}",
+            resize_keyboard=True,
+        )
+    else:
+        await callback_query.message.edit_text("Вы отменили запись отпуска!")
+    await redis.get(callback_query.message.chat.id)
+
+
+def date_range(start_date, end_date):
+    """Generate a range of dates between start_date and end_date."""
+    delta = timedelta(days=1)
+    current_date = start_date
+    while current_date <= end_date:
+        yield current_date
+        current_date += delta

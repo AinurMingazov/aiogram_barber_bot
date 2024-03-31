@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id, bot
+from config import admin_id, bot, calendar_dates_range
 from constants import denotation_client_days
 from db.db_session import redis
 from keyboards.admin import approve_appointment_keyboard
@@ -54,7 +54,7 @@ async def get_day_simple_calendar(callback_query: CallbackQuery, callback_data: 
     available_days = get_available_days()
 
     calendar = SimpleCalendar(show_alerts=True)
-    calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
+    calendar.set_dates_range(*calendar_dates_range)
     is_selected, selected_date, flag = await calendar.process_selection(callback_query, callback_data, "user")
 
     if is_selected:

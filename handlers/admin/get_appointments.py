@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.markdown import hbold
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import common_dates
+from config import calendar_dates_range, common_dates
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from services.appointments import get_active_appointments
@@ -40,7 +40,7 @@ async def get_day_appointments(callback_query: CallbackQuery, callback_data: Adm
 @admin_get.callback_query(SimpleCalendarCallback.filter(F.flag == "day_admin"))
 async def show_appointments_for_day(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     calendar = SimpleCalendar(show_alerts=True)
-    calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
+    calendar.set_dates_range(*calendar_dates_range)
     is_selected, selected_date, flag = await calendar.process_selection(callback_query, callback_data, "day_admin")
 
     if is_selected:

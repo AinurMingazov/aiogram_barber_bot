@@ -82,6 +82,17 @@ async def get_admin_confirm_change_user(value) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
 
 
+async def get_admin_confirm_vacation() -> InlineKeyboardMarkup:
+    confirm = {"1": "✅ Подтвердить", "0": "❌ Отменить"}
+    buttons = [
+        [
+            InlineKeyboardButton(text=f"{answer}", callback_data=AdminCallback(action=f"confvac_{key}").pack())
+            for key, answer in confirm.items()
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons, hide=True)
+
+
 async def get_admin_clients_buttons() -> InlineKeyboardMarkup:
     users_buttons = {}
     users = await get_active_users()

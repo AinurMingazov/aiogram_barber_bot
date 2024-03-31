@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id, bot
+from config import admin_id, bot, calendar_dates_range
 from constants import admin_canceled_appointment, admin_confirmed_appointment, denotation_admin_days
 from db.db_session import redis
 from handlers import AdminCallback
@@ -33,7 +33,7 @@ async def add_appointment(callback_query: CallbackQuery, callback_data: AdminCal
 @admin_edit.callback_query(SimpleCalendarCallback.filter(F.flag == "admin_appointment"))
 async def get_appointment_day(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback):
     calendar = SimpleCalendar(show_alerts=True)
-    calendar.set_dates_range(datetime(2022, 1, 1), datetime(2025, 12, 31))
+    calendar.set_dates_range(*calendar_dates_range)
     is_selected, selected_date, flag = await calendar.process_selection(
         callback_query, callback_data, "admin_appointment"
     )
