@@ -8,16 +8,16 @@ packages = [{include = "aiogram_barber_bot"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aiogram = "^3.3.0"
-workalendar = "^17.0.0"
-sqlalchemy = "^2.0.25"
-asyncpg = "^0.29.0"
-aioredis = "^2.0.1"
+aiogram = "3.3.0"
+workalendar = "17.0.0"
+sqlalchemy = "2.0.25"
+asyncpg = "0.29.0"
+aioredis = "2.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
-isort = "^5.13.2"
-ruff = "^0.1.11"
+isort = "5.13.2"
+ruff = "0.1.11"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,5 +1,4 @@
 import os
-from typing import Generator
 import aioredis
 
 from sqlalchemy.engine import url
@@ -16,16 +15,8 @@ ASYNC_DATABASE_URL = url.URL.create(
     username=os.getenv("POSTGRES_USER", "postgres"),
     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
 )
-
 engine = create_async_engine(ASYNC_DATABASE_URL, future=True)
-
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-
-
-async def get_db() -> Generator:
-    """Dependency for getting async session"""
-    async with async_session() as session:
-        yield session
 
 
 # Redis

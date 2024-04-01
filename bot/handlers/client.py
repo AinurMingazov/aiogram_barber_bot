@@ -9,7 +9,7 @@ from aiogram.utils.markdown import hbold
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import admin_id, bot, calendar_dates_range
 from constants import denotation_client_days
-from db.db_session import redis
+from db_config import redis
 from keyboards.admin import approve_appointment_keyboard
 from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
 from services.appointments import add_appointment, get_appointment

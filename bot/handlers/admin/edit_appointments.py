@@ -9,11 +9,12 @@ from aiogram.types import CallbackQuery, Message
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import admin_id, bot, calendar_dates_range
 from constants import admin_canceled_appointment, admin_confirmed_appointment, denotation_admin_days
-from db.db_session import redis
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from keyboards.admin import get_admin_confirm_choice_buttons, get_admin_time_slot_buttons
 from services.appointments import add_admin_appointment, del_appointment, get_appointment, update_appointment
+
+from db_config import redis
 
 admin_edit = Router()
 

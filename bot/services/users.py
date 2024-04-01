@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import and_, select, update
 
-from db.db_session import async_session
+from db_config import async_session
 from models import Appointment, BarUser, TimeSlot
 
 

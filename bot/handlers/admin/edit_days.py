@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery
 from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
 from config import admin_id, calendar_dates_range
 from constants import denotation_admin_days
-from db.db_session import redis
+from db_config import redis
 from handlers import AdminCallback
 from handlers.client import answer_wrong_date
 from keyboards.admin import change_date_option, get_admin_confirm_vacation

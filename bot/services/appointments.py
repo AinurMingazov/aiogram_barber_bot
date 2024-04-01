@@ -4,7 +4,7 @@ from datetime import datetime
 from aiogram.types import Message
 from sqlalchemy import delete, text, update
 
-from db.db_session import async_session, redis
+from db_config import async_session, redis
 from models import Appointment, BarUser
 from services.time_slots import get_time_slot_id
 from services.users import create_bar_user, create_or_get_bar_user

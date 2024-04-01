@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
-from db.db_session import redis
+from db_config import redis
 from handlers import AdminCallback
 from keyboards.admin import get_admin_clients_buttons, get_admin_clients_edit_buttons, get_admin_confirm_change_user
 from services.users import update_bar_user_by_id
