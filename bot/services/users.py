@@ -2,8 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import and_, select, update
 
-from db_config import async_session
-from models import Appointment, BarUser, TimeSlot
+from api.models import BarUser, Appointment, TimeSlot
+from db.db_session import async_session
 
 
 async def get_active_users():

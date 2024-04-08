@@ -6,16 +6,17 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
-from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id, bot, calendar_dates_range
-from constants import denotation_client_days
-from db_config import redis
-from keyboards.admin import approve_appointment_keyboard
-from keyboards.client import ask_user_phone, get_confirm_choice_buttons, get_time_slot_buttons
-from services.appointments import add_appointment, get_appointment
-from services.calendar_days import get_available_days, get_days_off
-from services.custom_days import get_unavailable_days
-from services.users import get_bar_user_phone_number, get_user_have_active_appointment, update_bar_user_by_user_id
+from bot.aiogram_calendar.schemas import SimpleCalendarCallback
+from bot.aiogram_calendar.simple_calendar import SimpleCalendar
+from bot.config import calendar_dates_range, admin_id, bot
+from bot.constants import denotation_client_days
+from bot.keyboards.admin import approve_appointment_keyboard
+from bot.keyboards.client import get_time_slot_buttons, get_confirm_choice_buttons, ask_user_phone
+from bot.services.appointments import add_appointment, get_appointment
+from bot.services.calendar_days import get_days_off, get_available_days
+from bot.services.custom_days import get_unavailable_days
+from bot.services.users import get_user_have_active_appointment, get_bar_user_phone_number, update_bar_user_by_user_id
+from db.db_session import redis
 
 client_router = Router()
 

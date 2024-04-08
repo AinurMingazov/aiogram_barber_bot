@@ -2,9 +2,9 @@ from datetime import datetime
 
 from sqlalchemy import and_, func, select, update
 
-from db_config import async_session
-from models import Appointment, CustomDay, TimeSlot
-from services.calendar_days import get_days_off, get_full_work_days, get_half_work_days
+from api.models import TimeSlot, Appointment, CustomDay
+from bot.services.calendar_days import get_half_work_days, get_full_work_days, get_days_off
+from db.db_session import async_session
 
 
 async def get_unavailable_days():

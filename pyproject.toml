@@ -13,6 +13,11 @@ workalendar = "17.0.0"
 sqlalchemy = "2.0.25"
 asyncpg = "0.29.0"
 aioredis = "2.0.1"
+litestar = "2.8.0"
+uvicorn = "0.29.0"
+alembic = "^1.13.1"
+psycopg2-binary = "^2.9.9"
+psycopg2 = "^2.9.9"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, Boolean, Column, Date, ForeignKey, Integer, String, Time
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+from db.db_session import Base
 
 
 class TimeSlot(Base):

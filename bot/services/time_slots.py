@@ -2,8 +2,8 @@ from datetime import time
 
 from sqlalchemy import select
 
-from db_config import async_session
-from models import Appointment, TimeSlot
+from api.models import TimeSlot, Appointment
+from db.db_session import async_session
 
 
 async def get_time_slot_id(time_str):

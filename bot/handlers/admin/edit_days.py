@@ -4,15 +4,16 @@ from datetime import datetime, timedelta
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import admin_id, calendar_dates_range
-from constants import denotation_admin_days
-from db_config import redis
-from handlers import AdminCallback
-from handlers.client import answer_wrong_date
-from keyboards.admin import change_date_option, get_admin_confirm_vacation
-from models import CustomDay
-from services.custom_days import create_or_update_custom_day, get_day_status
+from api.models import CustomDay
+from bot.aiogram_calendar.schemas import SimpleCalendarCallback
+from bot.aiogram_calendar.simple_calendar import SimpleCalendar
+from bot.config import calendar_dates_range, admin_id
+from bot.constants import denotation_admin_days
+from bot.handlers import AdminCallback
+from bot.handlers.client import answer_wrong_date
+from bot.keyboards.admin import change_date_option, get_admin_confirm_vacation
+from bot.services.custom_days import get_day_status, create_or_update_custom_day
+from db.db_session import redis
 
 admin_edit_days = Router()
 

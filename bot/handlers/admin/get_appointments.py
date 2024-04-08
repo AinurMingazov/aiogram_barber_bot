@@ -4,11 +4,12 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.utils.markdown import hbold
 
-from aiogram_calendar import SimpleCalendar, SimpleCalendarCallback
-from config import calendar_dates_range, common_dates
-from handlers import AdminCallback
-from handlers.client import answer_wrong_date
-from services.appointments import get_active_appointments
+from bot.aiogram_calendar.schemas import SimpleCalendarCallback
+from bot.aiogram_calendar.simple_calendar import SimpleCalendar
+from bot.config import calendar_dates_range, common_dates
+from bot.handlers import AdminCallback
+from bot.handlers.client import answer_wrong_date
+from bot.services.appointments import get_active_appointments
 
 admin_get = Router()
 
