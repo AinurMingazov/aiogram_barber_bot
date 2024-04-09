@@ -5,13 +5,13 @@ from aiogram import Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from config import bot
-from handlers.admin.edit_appointments import admin_edit
-from handlers.admin.edit_days import admin_edit_days
-from handlers.admin.edit_users import admin_edit_users
-from handlers.admin.get_appointments import admin_get
-from handlers.client import client_router
-from keyboards.admin import get_admin_choice_buttons
+from bot.config import bot
+from bot.handlers.admin.edit_appointments import admin_edit
+from bot.handlers.admin.edit_days import admin_edit_days
+from bot.handlers.admin.edit_users import admin_edit_users
+from bot.handlers.admin.get_appointments import admin_get
+from bot.handlers.client import client_router
+from bot.keyboards.admin import get_admin_choice_buttons
 
 # Bot
 dp = Dispatcher()

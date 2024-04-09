@@ -11,28 +11,20 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base(metadata=MetaData())
 # Postgresql
 
-# SYNC_DATABASE_URL = url.URL.create(
-#     drivername='postgresql+psycopg2',
-#     database=os.getenv("POSTGRES_DB", "postgres"),
-#     port=int(os.getenv("POSTGRES_PORT", "5432")),
-#     host=os.getenv("POSTGRES_HOST", "localhost"),
-#     username=os.getenv("POSTGRES_USER", "postgres"),
-#     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
-# )
-
 SYNC_DATABASE_URL = url.URL.create(
     drivername='postgresql+psycopg2',
-    database='barber_db',
-    port=5335,
-    host='localhost',
-    username='barber',
-    password='DhZfatpyg7bfmy',
+    database=os.getenv("POSTGRES_DB", "postgres"),
+    port=int(os.getenv("POSTGRES_PORT", "5335")),
+    host=os.getenv("POSTGRES_HOST", "localhost"),
+    username=os.getenv("POSTGRES_USER", "postgres"),
+    password=os.getenv("POSTGRES_PASSWORD", "postgres"),
 )
+
 
 ASYNC_DATABASE_URL = url.URL.create(
     drivername="postgresql+asyncpg",
     database=os.getenv("POSTGRES_DB", "postgres"),
-    port=int(os.getenv("POSTGRES_PORT", "5432")),
+    port=int(os.getenv("POSTGRES_PORT", "5335")),
     host=os.getenv("POSTGRES_HOST", "localhost"),
     username=os.getenv("POSTGRES_USER", "postgres"),
     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
