@@ -7,6 +7,13 @@ services:
     command: bot/entrypoint.sh
     env_file: .env
 
+  api:
+    build:
+      context: .
+    command: api/entrypoint.sh
+    env_file: .env
+    ports:
+      - "88:88"
 
   db:
     image: postgres:16.2-alpine

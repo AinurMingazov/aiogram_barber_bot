@@ -27,6 +27,7 @@ docker-compose up
 ### Containers
 
 - **bot**
+- **api**
 - **PostgreSQL** as **db**
 - **Redis**
 ---
