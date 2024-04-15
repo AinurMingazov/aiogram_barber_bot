@@ -2,8 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import and_, func, select, update
 
-from api.models import TimeSlot, Appointment, CustomDay
-from bot.services.calendar_days import get_half_work_days, get_full_work_days, get_days_off
+from api.models import Appointment, CustomDay, TimeSlot
+from bot.services.calendar_days import get_days_off, get_full_work_days, get_half_work_days
 from db.db_session import async_session
 
 

@@ -4,10 +4,10 @@ from datetime import datetime
 from aiogram.types import Message
 from sqlalchemy import delete, text, update
 
-from api.models import BarUser, Appointment
+from api.models import Appointment, BarUser
 from bot.services.time_slots import get_time_slot_id
-from bot.services.users import create_or_get_bar_user
-from db.db_session import redis, async_session
+from bot.services.users import create_bar_user, create_or_get_bar_user
+from db.db_session import async_session, redis
 
 
 async def add_appointment(message: Message) -> tuple[int, int]:

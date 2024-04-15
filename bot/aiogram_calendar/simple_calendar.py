@@ -7,8 +7,8 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from bot.aiogram_calendar.common import GenericCalendar
 from bot.aiogram_calendar.schemas import (SimpleCalAct, SimpleCalendarCallback, highlight, highlight_available_dates,
                                           highlight_half_work_dates, highlight_unavailable_dates, superscript)
-from bot.services.calendar_days import get_days_off, get_half_work_days, get_available_days
-from bot.services.custom_days import get_unavailable_days, get_custom_days
+from bot.services.calendar_days import get_available_days, get_days_off, get_half_work_days
+from bot.services.custom_days import get_custom_days, get_unavailable_days
 
 
 class SimpleCalendar(GenericCalendar):

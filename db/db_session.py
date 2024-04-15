@@ -5,14 +5,14 @@ import aioredis
 from sqlalchemy import MetaData
 from sqlalchemy.engine import url
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base(metadata=MetaData())
 # Postgresql
 
 SYNC_DATABASE_URL = url.URL.create(
-    drivername='postgresql+psycopg2',
+    drivername="postgresql+psycopg2",
     database=os.getenv("POSTGRES_DB", "postgres"),
     port=int(os.getenv("POSTGRES_PORT", "5335")),
     host=os.getenv("POSTGRES_HOST", "localhost"),
@@ -35,7 +35,7 @@ engine = create_async_engine(ASYNC_DATABASE_URL, future=True)
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
-async def get_db() -> Generator:
+async def get_session() -> Generator:
     """Dependency for getting async session"""
     async with async_session() as session:
         yield session
