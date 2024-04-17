@@ -3,6 +3,8 @@ from datetime import datetime
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.handlers import AdminCallback
+from bot.services.time_slots import get_free_slots
+from bot.services.users import get_active_users
 
 
 async def get_admin_choice_buttons() -> InlineKeyboardMarkup:
