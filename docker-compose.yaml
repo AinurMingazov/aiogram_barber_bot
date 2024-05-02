@@ -16,14 +16,33 @@ services:
       - "88:88"
 
   db:
-    image: postgres:16.2-alpine
-    restart: always
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+      args:
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    restart: on-failure
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     environment:
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_SUPERUSER=${POSTGRES_SUPERUSER}
+      - POSTGRES_SUPERUSER_PASSWORD=${POSTGRES_SUPERUSER_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -p 5335" ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
     ports:
-      - "5335:5432"
+      - "5335:5335"
+    env_file: .env
 
 
   redis:

@@ -9,8 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base(metadata=MetaData())
-# Postgresql
 
+# Postgresql
 SYNC_DATABASE_URL = url.URL.create(
     drivername="postgresql+psycopg2",
     database=os.getenv("POSTGRES_DB", "postgres"),
