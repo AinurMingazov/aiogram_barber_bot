@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, Boolean, Column, Date, ForeignKey, Integer, String, Time
+from sqlalchemy import BigInteger, Boolean, Column, Date, ForeignKey, Integer, String, Time, DateTime
 from sqlalchemy.orm import relationship
 
 from db.db_session import Base
@@ -18,6 +18,7 @@ class Appointment(Base):
     __tablename__ = "panel_appointment"
 
     id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime)
     date = Column(Date)
     time_slot_id = Column(Integer, ForeignKey("panel_timeslot.id"))
     bar_user_id = Column(Integer, ForeignKey("panel_baruser.id"))

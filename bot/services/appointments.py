@@ -24,6 +24,7 @@ async def add_appointment(message: Message) -> tuple[int, int]:
         date=datetime.strptime(appointment_cache["on_date"], "%d %B %Y").date(),
         time_slot_id=time_slot_id,
         bar_user_id=bar_user_id,
+        created_at=datetime.now(),
         is_approved=False,
     )
     appointment_id = await create_appointment(new_appointment)
@@ -44,6 +45,7 @@ async def add_admin_appointment(message: Message) -> int:
         date=datetime.strptime(appointment_cache["on_date"], "%d %B %Y").date(),
         time_slot_id=time_slot_id,
         bar_user_id=bar_user_id,
+        created_at=datetime.now(),
         is_approved=True,
     )
     await create_appointment(new_appointment)
