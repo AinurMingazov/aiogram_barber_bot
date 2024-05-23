@@ -2,11 +2,11 @@ import os
 from typing import Generator
 
 import aioredis
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, create_engine
 from sqlalchemy.engine import url
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 Base = declarative_base(metadata=MetaData())
 
@@ -30,9 +30,11 @@ ASYNC_DATABASE_URL = url.URL.create(
     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
 )
 
-engine = create_async_engine(ASYNC_DATABASE_URL, future=True)
+async_engine = create_async_engine(ASYNC_DATABASE_URL, future=True)
+async_session = sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
 
-async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+sync_engine = create_engine(SYNC_DATABASE_URL)
+sync_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=sync_engine))
 
 
 async def get_session() -> Generator:

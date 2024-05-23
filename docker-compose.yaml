@@ -6,12 +6,17 @@ services:
       context: .
     command: bot/entrypoint.sh
     env_file: .env
+    depends_on:
+      - api
 
   api:
     build:
       context: .
     command: api/entrypoint.sh
     env_file: .env
+    depends_on:
+      - db
+      - redis
     ports:
       - "88:88"
 
@@ -43,7 +48,6 @@ services:
     ports:
       - "5335:5335"
     env_file: .env
-
 
   redis:
     image: redis:latest
