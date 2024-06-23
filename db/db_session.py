@@ -1,7 +1,7 @@
 import os
 from typing import Generator
 
-import aioredis
+from redis import asyncio as aioredis
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.engine import url
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
