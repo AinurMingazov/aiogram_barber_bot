@@ -5,7 +5,7 @@ from aiogram import Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from bot.config import bot
+from bot.config import bot, admin_id, moder_id
 from bot.handlers.admin.edit_appointments import admin_edit
 from bot.handlers.admin.edit_days import admin_edit_days
 from bot.handlers.admin.edit_users import admin_edit_users
@@ -23,12 +23,15 @@ logging.basicConfig(level=logging.INFO)
 
 @dp.message(Command("admin"))
 async def command_admin(message: Message) -> None:
-    keyboard = await get_admin_choice_buttons()
-    await message.answer(
-        "🕹 Панель администратора\n",
-        reply_markup=keyboard,
-        resize_keyboard=True,
-    )
+    if message.chat.id not in [admin_id, moder_id]:
+        await message.answer('Вы не являетесь админом')
+    else:
+        keyboard = await get_admin_choice_buttons()
+        await message.answer(
+            "🕹 Панель администратора\n",
+            reply_markup=keyboard,
+            resize_keyboard=True,
+        )
 
 
 async def main():
